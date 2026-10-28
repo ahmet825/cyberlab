@@ -8,7 +8,7 @@ interface WebTerminalProps {
   cookies: Record<string, string>;
   setCookie: (key: string, value: string) => void;
   onHttpRequest: (method: string, url: string, headers: Record<string, string>, body?: string) => Promise<any>;
-  onLabSolved: (labId: string) => void;
+  onLabSolved: (labId: string, verifiedFlag?: string) => void;
 }
 
 export const WebTerminal: React.FC<WebTerminalProps> = ({

@@ -12,7 +12,7 @@ export const APPRENTICE_LABS: LabItem[] = [
     objective: 'Arama kutusuna bir XSS yükü (<script>alert(1)</script> veya <img src=x onerror=alert(1)>) yazarak tarayıcıda alert() tetikleyin ve sistem bayrağını ele geçirin.',
     startingUrl: 'https://corp-portal.local/search?q=',
     tags: ['Reflected XSS', 'DOM Injection', 'Script Tag', 'Web Güvenliği Temelleri'],
-    flag: 'FLAG{xss_b4s1c_r3fl3ct_pwn3d}',
+    flagHash: 'd3cc091216bcfaa770d3a372962bc685',
     defenseMechanisms: [
       'HTML Varlık Kodlaması (HTML Entity Encoding)',
       'İçerik Güvenlik Politikası (Content Security Policy - CSP)',
@@ -71,7 +71,7 @@ export const APPRENTICE_LABS: LabItem[] = [
     objective: "Giriş formundaki kullanıcı adı alanına SQL Auth Bypass yükü (admin' OR 1=1--) girerek parola bilmeden yönetici olarak oturum açın ve bayrağı kapın.",
     startingUrl: 'https://corp-portal.local/login',
     tags: ['SQL Injection', 'Auth Bypass', 'OR 1=1', 'Kimlik Doğrulama Zafiyeti'],
-    flag: 'FLAG{sqli_4uth_byp4ss_h4sh_pwn3d}',
+    flagHash: '8155b05fb42803ec69c937c33a46d640',
     defenseMechanisms: [
       'Parametreli Sorgular (Prepared Statements / Parameterized Queries)',
       'ORM Kullanımı',
@@ -130,7 +130,7 @@ export const APPRENTICE_LABS: LabItem[] = [
     objective: "Katalog URL'sine UNION SELECT enjeksiyonu yaparak corp_accounts tablosundaki sysadmin_chief kullanıcısının parolasını (FLAG) ekranda görüntüleyin.",
     startingUrl: 'https://corp-inventory.local/inventory?category=Electronics',
     tags: ['SQL Injection', 'UNION Attack', 'Veritabanı Sızıntısı', 'SQLite'],
-    flag: 'FLAG{un10n_schema_d1sc0very_m4st3r}',
+    flagHash: '86c84d078f991dd0ace67c8d23df69bc',
     defenseMechanisms: [
       'Parametreli Sorgular (Prepared Statements)',
       'Girdi Beyaz Listesi (Kategori değerlerinin sınırlanması)',
@@ -155,7 +155,7 @@ export const APPRENTICE_LABS: LabItem[] = [
         id: 3,
         title: 'Aşama 3: Bayrak Sızıntısı ve Kasa Açımı',
         objective: 'Ürün listesinde sysadmin_chief kullanıcısının parola alanına basılan FLAG değerini kopyalayın.',
-        guidance: 'Yeşil vurgu ile tabloda beliren FLAG{un10n_schema_d1sc0very_m4st3r} değerini doğrulayın.',
+        guidance: 'Yeşil vurgu ile tabloda dinamik olarak beliren sistem bayrağını kopyalayıp doğrulayın.',
         isCompleted: false
       }
     ],
@@ -187,9 +187,9 @@ export const APPRENTICE_LABS: LabItem[] = [
     estimatedMinutes: 5,
     description: `[GİZLİ // DOSYA NO: ACME-NET-██04]\n\nOperatör X, ACME Savunma web sunucusunun açıklarını tarıyor. Muhbir Y fısıldıyor:\n\n"Geliştiriciler arama motorlarının (Google, Bing) indekslemesini istemedikleri gizli sayfaları web kök dizinindeki 'robots.txt' dosyasında belirtirler. robots.txt dosyasını aç, 'Disallow' edilen gizli yönetim rotasını keşfet ve doğrudan o gizli sayfaya giderek bayrağı teslim al!"`,
     objective: "Adres çubuğuna /robots.txt yazarak gizli yönetim yolunu (/admin_secret_portal) bulun, sayfayı ziyaret edip bayrağı yakalayın.",
-    startingUrl: 'https://corp-portal.local/robots.txt',
+    startingUrl: 'https://corp-portal.local/',
     tags: ['Recon', 'robots.txt', 'Bilgi İfşası', 'Gizli Rotalar'],
-    flag: 'FLAG{r0b0ts_txt_s3cr3t_d1sc0v3r3d}',
+    flagHash: 'faefb05a2bd4668f7e6f6be2cd669cbf',
     defenseMechanisms: [
       'Hassas Sayfaları robots.txt ile Gizlemeye Çalışmamak (Security through Obscurity)',
       'Güçlü Kimlik Doğrulama ile Erişim Kısıtlama',

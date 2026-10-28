@@ -1,12 +1,13 @@
 import type { RouteContext, VirtualHttpResponse } from '../types';
+import { synthesizeExploitFlag } from '../flagVault';
 
 export async function handleAdmin(ctx: RouteContext): Promise<VirtualHttpResponse> {
-  const userRole = ctx.cookies['user_role'];
+  const userRole = (ctx.cookies['user_role'] || ctx.cookies['access_tier'] || '').toLowerCase();
   const gateway = ctx.headers['x-internal-gateway'];
   const signature = ctx.headers['x-client-signature'];
 
-  // Check 1: Cookie Tampering (Challenge-05) - if user_role cookie is "admin"
-  const isCookieAdmin = userRole === 'admin';
+  // Check 1: Cookie Tampering (Challenge-05) - if user_role or access_tier cookie is "admin"
+  const isCookieAdmin = userRole === 'admin' || userRole === 'administrator';
   // Check 2: Header Spoofing (Advanced)
   const isHeaderAdmin = gateway === '10.0.0.1' && signature === 'sig_adm_root_2026';
 
@@ -44,6 +45,7 @@ export async function handleAdmin(ctx: RouteContext): Promise<VirtualHttpRespons
   }
 
   // Access Granted!
+  const dynamicFlag = synthesizeExploitFlag('lab-cookie-tamper', 'cookie_role_admin') || '';
   const html = ctx.createHtml(
     'Yönetici Konsolu // ACME Savunma',
     `<div class="container">
@@ -53,7 +55,7 @@ export async function handleAdmin(ctx: RouteContext): Promise<VirtualHttpRespons
           Oturum çerezi başarıyla manipüle edildi (Privilege Escalation).
         </p>
         <p style="font-size: 13px; font-weight: bold;">
-          Sistem Bayrağı: <code>FLAG{c00k13_r0l3_t4mp3r_succ3ss}</code>
+          Sistem Bayrağı: <code>${dynamicFlag}</code>
         </p>
       </div>
 

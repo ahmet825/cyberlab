@@ -33,7 +33,7 @@ export interface LabItem {
   stages: PuzzleStage[];
   solutionExplanation: string;
   defenseMechanisms: string[];
-  flag: string;
+  flagHash: string;
   initialState?: Record<string, any>;
 }
 

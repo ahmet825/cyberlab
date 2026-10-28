@@ -1,4 +1,5 @@
 import type { Mission } from './types';
+import { verifyLabFlag } from '../../lib/sandbox/flagVault';
 
 export interface LinuxMachineDef {
   id: string;
@@ -179,10 +180,11 @@ export const INITIAL_MISSIONS: Mission[] = [
     learnedConcept: 'Süper Kullanıcı (Root, UID 0), Dosya Koruması (0600) ve Yetki Yükseltme (Privilege Escalation)',
     conceptSummary: `Linux sistemlerinde "root" kullanıcısı mutlak yöneticidir (UID 0). /root dizini ve 0600 iznine sahip dosyalar sıradan kullanıcılara tamamen kapalıdır. "sudo" (SuperUser DO) komutu, yetkili bir kullanıcının geçici olarak root kimliğine bürünerek işlem yapmasını sağlar. Siber güvenlikte yetkisiz bir durumdan root yetkilerine ulaşma sürecine 'Yetki Yükseltme' (Privilege Escalation) adı verilir.`,
     checkCondition: (ctx) => {
+      const ctfMatch = ctx.lastOutput.match(/CTF\{[^}\s]+\}/);
       return (
         ctx.readFiles.has('/root/final_message.txt') ||
         ctx.lastOutput.includes("[Y'NİN SON MESAJI - GİZLİ GÖREV TAMAMLANDI]") ||
-        ctx.lastOutput.includes('CTF{y_terminal_master_2026_conquered}')
+        (ctfMatch ? verifyLabFlag('linux-root-final', ctfMatch[0]) : false)
       );
     },
     nextMissionId: null

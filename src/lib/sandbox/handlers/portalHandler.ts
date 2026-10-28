@@ -1,5 +1,6 @@
 import type { RouteContext, VirtualHttpResponse } from '../types';
 import { escapeHtml } from '../template';
+import { synthesizeExploitFlag } from '../flagVault';
 
 export async function handleHome(ctx: RouteContext): Promise<VirtualHttpResponse> {
   const html = ctx.createHtml(
@@ -109,6 +110,7 @@ export async function handleLogin(ctx: RouteContext): Promise<VirtualHttpRespons
 
     if (isSqliBypass) {
       sessionValue = 'session_admin_sqli_pwned_root';
+      const dynamicFlag = synthesizeExploitFlag('lab-sqli-auth-bypass', 'sqli_or_true_bypass') || '';
       authFeedback = `
         <div class="badge-success" style="border-left: 4px solid #00ff9d;">
           <h4 style="font-size: 14px; color: #00ff9d; margin-bottom: 4px;">[SQLi AUTH BYPASS BAŞARILI!]</h4>
@@ -119,7 +121,7 @@ export async function handleLogin(ctx: RouteContext): Promise<VirtualHttpRespons
             Hoş geldiniz, <strong>Sistem Yöneticisi (administrator)</strong>!
           </p>
           <div style="background: rgba(0, 255, 157, 0.12); padding: 8px 10px; border-radius: 4px; border: 1px solid rgba(0, 255, 157, 0.3);">
-            <strong>SİSTEM BAYRAĞI:</strong> <code style="color: #00ff9d; font-size: 13px;">FLAG{sqli_4uth_byp4ss_h4sh_pwn3d}</code>
+            <strong>SİSTEM BAYRAĞI:</strong> <code style="color: #00ff9d; font-size: 13px;">${dynamicFlag}</code>
           </div>
         </div>`;
     } else if ((username === 'wiener' && password === 'peter') || (username === 'carlos' && password === 'carlosPassword99')) {
@@ -194,6 +196,10 @@ Disallow: /config/
 
 // Challenge-04: Admin Secret Portal
 export async function handleAdminSecretPortal(ctx: RouteContext): Promise<VirtualHttpResponse> {
+  const dynamicFlag =
+    ctx.path === '/admin_secret_portal'
+      ? synthesizeExploitFlag('lab-recon-robots', 'recon_admin_secret_portal') || ''
+      : '';
   const html = ctx.createHtml(
     'Gizli Yönetim Portalı // ACME Savunma',
     `<div class="container">
@@ -203,7 +209,7 @@ export async function handleAdminSecretPortal(ctx: RouteContext): Promise<Virtua
           robots.txt dosyasında ifşa olan gizli rota başarıyla keşfedildi.
         </p>
         <p style="font-size: 13px;">
-          <strong>Sistem Bayrağı:</strong> <code style="color: #00ff9d; font-size: 13px;">FLAG{r0b0ts_txt_s3cr3t_d1sc0v3r3d}</code>
+          <strong>Sistem Bayrağı:</strong> <code style="color: #00ff9d; font-size: 13px;">${dynamicFlag}</code>
         </p>
       </div>
       <div style="background: #0f172a; padding: 14px; border-radius: 6px; border: 1px solid #334155; margin-top: 16px; font-size: 12px; color: #cbd5e1;">
@@ -225,21 +231,23 @@ export async function handleDocuments(ctx: RouteContext): Promise<VirtualHttpRes
   const file = ctx.query['file'] || 'report.pdf';
   let fileContent = '';
   let isTraversed = false;
+  let dynamicFlag = '';
 
   if (file.includes('..') || file.includes('secret.txt') || file.includes('/etc/passwd')) {
     isTraversed = true;
+    dynamicFlag = synthesizeExploitFlag('lab-path-traversal', 'traversal_secret_txt') || '';
     fileContent = `[ROOT SECRETS ARCHIVE // SİSTEM KASASI]
 Dosya Yolu: /var/secrets/secret.txt
 Gizlilik: EN YÜKSEK (TOP SECRET)
 
-Kritik Güvenlik Bayrağı: FLAG{p4th_tr4v3rs4l_f1l3_l34k}
+Kritik Güvenlik Bayrağı: ${dynamicFlag}
 Sunucu Anahtarı: k3y_s3rv3r_r00t_882914
 Oluşturulma Tarihi: 2026-03-15`;
   } else {
     fileContent = `ACME Savunma Sanayii — Aylık Siber Güvenlik Değerlendirme Raporu
 Dosya: report.pdf
 Durum: Kamuya Açık Özet
-İçerik: Tüm sunucu altyapısı ve ağ geçitleri normal seyrinde çalışmaktadır.`;
+İerik: Tüm sunucu altyapısı ve ağ geçitleri normal seyrinde çalışmaktadır.`;
   }
 
   const html = ctx.createHtml(
@@ -257,7 +265,7 @@ Durum: Kamuya Açık Özet
             Sunucu kök dizinindeki kilitli sistem dosyası okundu.
           </p>
           <p style="font-size: 13px; margin-top: 6px;">
-            <strong>Bayrak:</strong> <code>FLAG{p4th_tr4v3rs4l_f1l3_l34k}</code>
+            <strong>Bayrak:</strong> <code>${dynamicFlag}</code>
           </p>
         </div>
       ` : ''}

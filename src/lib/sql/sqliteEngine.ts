@@ -1,11 +1,12 @@
 import initSqlJs, { type Database } from 'sql.js';
 import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
+import { synthesizeExploitFlag } from '../sandbox/flagVault';
 
 let sqlPromise: Promise<any> | null = null;
 let activeDb: Database | null = null;
 let wasmFailed = false;
 
-// Default Seed Data for In-Memory Fallback & WASM
+// Default Seed Data for In-Memory Fallback & WASM (Zero plaintext flags in static seed)
 const SEED_PRODUCTS = [
   [1, 'Cyber Deck MK-4', 1299.99, 'Electronics', 'High-speed hardware penetration testing deck'],
   [2, 'Yagi 2.4/5GHz Antenna', 149.50, 'Electronics', 'Long range directional Wi-Fi recon unit'],
@@ -15,7 +16,7 @@ const SEED_PRODUCTS = [
 ];
 
 const SEED_CORP_ACCOUNTS = [
-  [101, 'sysadmin_chief', 'chief@corp-defense.internal', 'FLAG{un10n_schema_d1sc0very_m4st3r}', 'superuser'],
+  [101, 'sysadmin_chief', 'chief@corp-defense.internal', '__VAULT_TOKEN_UNION__', 'superuser'],
   [102, 'dev_auditor', 'auditor@corp-defense.internal', 'audit_hash_b9901', 'security_analyst'],
   [103, 'ops_engineer', 'ops@corp-defense.internal', 'ops_hash_12944', 'developer']
 ];
@@ -70,7 +71,7 @@ export async function resetDatabase(): Promise<Database | null> {
 
     db.run(`
       INSERT INTO users (id, username, password, role, api_key) VALUES
-      (1, 'administrator', 'FLAG{sqli_4uth_byp4ss_h4sh_pwn3d}', 'admin', 'sk_live_adm_789123'),
+      (1, 'administrator', '__VAULT_TOKEN_AUTH__', 'admin', 'sk_live_adm_789123'),
       (2, 'carlos', 'carlosPassword99', 'user', 'sk_live_usr_445511'),
       (3, 'wiener', 'peter', 'user', 'sk_live_usr_998822');
     `);
@@ -86,9 +87,9 @@ export async function resetDatabase(): Promise<Database | null> {
 
     db.run(`
       INSERT INTO system_secrets (key_id, secret_name, secret_value, classification) VALUES
-      (1, 'root_vault_flag', 'FLAG{bl1nd_sqli_b00l3an_3xtr4ct10n}', 'TOP_SECRET_ORCON'),
+      (1, 'root_vault_flag', '__VAULT_TOKEN_BLIND__', 'TOP_SECRET_ORCON'),
       (2, 'db_encryption_master_key', '0x99F4A8C1102DE', 'RESTRICTED'),
-      (3, 'error_sqli_hash_leak', 'FLAG{3rr0r_b4s3d_sqli_c4st_l34k}', 'CONFIDENTIAL');
+      (3, 'error_sqli_hash_leak', '__VAULT_TOKEN_ERROR__', 'CONFIDENTIAL');
     `);
 
     db.run(`
@@ -141,6 +142,31 @@ export interface SqlQueryResult {
   rawQuery: string;
 }
 
+function resolveDynamicSqlTokens(rawQuery: string, rows: any[][]): any[][] {
+  const qLower = rawQuery.toLowerCase();
+  const hasUnionCorp = qLower.includes('corp_accounts') || qLower.includes('acc_');
+  const hasUsers = qLower.includes('users');
+  const hasSecrets = qLower.includes('system_secrets');
+
+  return rows.map((row) =>
+    row.map((cell) => {
+      if (cell === '__VAULT_TOKEN_UNION__' && hasUnionCorp) {
+        return synthesizeExploitFlag('lab-sqli-union-schema', 'sqli_union_corp_accounts') || cell;
+      }
+      if (cell === '__VAULT_TOKEN_AUTH__' && hasUsers) {
+        return synthesizeExploitFlag('lab-sqli-auth-bypass', 'sqli_or_true_bypass') || cell;
+      }
+      if (cell === '__VAULT_TOKEN_BLIND__' && hasSecrets) {
+        return synthesizeExploitFlag('lab-sqli-blind-boolean', 'blind_boolean_diff') || cell;
+      }
+      if (cell === '__VAULT_TOKEN_ERROR__' && hasSecrets) {
+        return synthesizeExploitFlag('lab-error-sqli-cast', 'error_sqli_cast_leak') || cell;
+      }
+      return cell;
+    })
+  );
+}
+
 /**
  * Executes queries against SQLite WASM if available;
  * Otherwise executes against the resilient In-Memory SQL Simulator.
@@ -161,7 +187,7 @@ export async function executeVulnerableQuery(rawQuery: string): Promise<SqlQuery
         }
         return {
           columns: res[0].columns,
-          values: res[0].values,
+          values: resolveDynamicSqlTokens(rawQuery, res[0].values),
           rawQuery
         };
       }
@@ -208,7 +234,9 @@ function executeInMemorySql(rawQuery: string): SqlQueryResult {
     // Check if selecting from corp_accounts
     const rows = [...SEED_PRODUCTS.slice(0, 2)];
     if (qLower.includes('corp_accounts') || qLower.includes('acc_')) {
-      const unionRow = [1, 'sysadmin_chief', 'FLAG{un10n_schema_d1sc0very_m4st3r}', 'superuser'];
+      const dynamicUnionFlag =
+        synthesizeExploitFlag('lab-sqli-union-schema', 'sqli_union_corp_accounts') || '__LOCKED__';
+      const unionRow = [1, 'sysadmin_chief', dynamicUnionFlag, 'superuser'];
       return {
         columns: productCols,
         values: [...rows, unionRow],
@@ -241,10 +269,12 @@ function executeInMemorySql(rawQuery: string): SqlQueryResult {
 
   // 4. system_secrets lookup (Error-based or lookup)
   if (qLower.includes('system_secrets')) {
+    const dynamicBlindFlag =
+      synthesizeExploitFlag('lab-sqli-blind-boolean', 'blind_boolean_diff') || '__LOCKED__';
     return {
       columns: ['key_id', 'secret_name', 'secret_value', 'classification'],
       values: [
-        [1, 'root_vault_flag', 'FLAG{bl1nd_sqli_b00l3an_3xtr4ct10n}', 'TOP_SECRET_ORCON']
+        [1, 'root_vault_flag', dynamicBlindFlag, 'TOP_SECRET_ORCON']
       ],
       rawQuery
     };

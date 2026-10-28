@@ -1,11 +1,12 @@
 import { executeVulnerableQuery } from '../sql/sqliteEngine';
+import { synthesizeExploitFlag } from '../sandbox/flagVault';
 
 export interface CommandContext {
   activeLabId: string;
   cookies: Record<string, string>;
   setCookie: (key: string, value: string) => void;
   onHttpRequest: (method: string, url: string, headers: Record<string, string>, body?: string) => Promise<{ status: number; headers: Record<string, string>; body: string }>;
-  onLabSolved: (labId: string) => void;
+  onLabSolved: (labId: string, verifiedFlag?: string) => void;
 }
 
 export interface CommandOutput {
@@ -48,7 +49,7 @@ Available Offensive & Defensive Security Commands:
       return { output: '__CLEAR__', type: 'system' };
 
     case 'whoami':
-      const currentRole = context.cookies['access_tier'] || context.cookies['role'] || 'guest_user';
+      const currentRole = context.cookies['user_role'] || context.cookies['access_tier'] || context.cookies['role'] || 'guest_user';
       return {
         type: 'standard',
         output: `uid=1001(student) gid=1001(security_lab) role=${currentRole} environment=browser_wasm`
@@ -90,11 +91,12 @@ Available Offensive & Defensive Security Commands:
           return { output: 'Usage: cookie set <key> <value>', type: 'error' };
         }
         context.setCookie(key, val);
-        if (key === 'access_tier' && val === 'admin' && context.activeLabId === 'lab-cookie-tamper') {
-          context.onLabSolved('lab-cookie-tamper');
+        if ((key === 'user_role' || key === 'access_tier') && val === 'admin' && context.activeLabId === 'lab-cookie-tamper') {
+          const dynFlag = synthesizeExploitFlag('lab-cookie-tamper', 'cookie_role_admin') || '';
+          context.onLabSolved('lab-cookie-tamper', dynFlag);
           return {
             type: 'success',
-            output: `[+] Cookie '${key}' set to '${val}'.\n\x1b[32m[!] EXPLOIT SUCCESSFUL: Privilege escalated to Admin tier! Lab Solved!\x1b[0m`
+            output: `[+] Cookie '${key}' set to '${val}'.\n\x1b[32m[!] EXPLOIT SUCCESSFUL: Privilege escalated to Admin tier! Flag: ${dynFlag}\x1b[0m`
           };
         }
         return {
@@ -254,13 +256,15 @@ async function executeCurlCommand(args: string[], context: CommandContext): Prom
     // Trigger lab completion checks for curl-driven labs
     if (context.activeLabId === 'lab-recon-headers') {
       if (headers['X-User-Role']?.toLowerCase() === 'administrator') {
-        context.onLabSolved('lab-recon-headers');
-        output += `\n\n\x1b[32m[!] LAB SOLVED: Admin privilege header accepted! Flag: FLAG{adm1n_h34d3r_byp4ss_succ3ss}\x1b[0m`;
+        const dynFlag = synthesizeExploitFlag('lab-recon-headers', 'header_role_administrator') || '';
+        context.onLabSolved('lab-recon-headers', dynFlag);
+        output += `\n\n\x1b[32m[!] LAB SOLVED: Admin privilege header accepted! Flag: ${dynFlag}\x1b[0m`;
       }
     } else if (context.activeLabId === 'lab-idor-api') {
       if (url.includes('/api/users/1') || url.includes('/api/users/01')) {
-        context.onLabSolved('lab-idor-api');
-        output += `\n\n\x1b[32m[!] LAB SOLVED: IDOR Vulnerability exploited! Exfiltrated Admin API Key: FLAG{1d0r_4p1_3xf1ltr4t10n_succ3ss}\x1b[0m`;
+        const dynFlag = synthesizeExploitFlag('lab-idor-api', 'idor_api_user_1') || '';
+        context.onLabSolved('lab-idor-api', dynFlag);
+        output += `\n\n\x1b[32m[!] LAB SOLVED: IDOR Vulnerability exploited! Exfiltrated Admin API Key: ${dynFlag}\x1b[0m`;
       }
     }
 

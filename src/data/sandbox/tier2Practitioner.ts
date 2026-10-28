@@ -12,7 +12,7 @@ export const PRACTITIONER_LABS: LabItem[] = [
     objective: "Tarayıcıdaki 'user_role' çerez değerini 'guest' yerine 'admin' olarak değiştirin, /admin sayfasını yenileyerek süper kullanıcı paneline sızın ve bayrağı ele geçirin.",
     startingUrl: 'https://corp-portal.local/admin',
     tags: ['Cookie Tampering', 'Yetki Yükseltme', 'Privilege Escalation', 'Oturum Güvenliği'],
-    flag: 'FLAG{c00k13_r0l3_t4mp3r_succ3ss}',
+    flagHash: '3c92fad772d7bd6ec138d2ebe70a4d7e',
     defenseMechanisms: [
       'Yetki Bilgisinin Sunucu Tarafında Saklanması (Server-Side Session)',
       'Çerezlerin Kriptografik Olarak İmzalanması (HMAC Signed Cookies)',
@@ -71,7 +71,7 @@ export const PRACTITIONER_LABS: LabItem[] = [
     objective: "URL parametresindeki doc_id=101 değerini 105 yaparak başka bir birime ait gizli savunma direktifini görüntüleyin ve bayrağı elde edin.",
     startingUrl: 'https://corp-vault.local/api/v2/vault/flag?doc_id=101',
     tags: ['IDOR', 'BOLA', 'Yetkisiz Nesne Erişimi', 'API Güvenliği'],
-    flag: 'FLAG{b0l4_1d0r_u1d_3num_succ3ss}',
+    flagHash: '42e7e0b51f55dd0ae633a2bfdc27ea42',
     defenseMechanisms: [
       'Nesne Bazında Yetki Denetimi (Object-Level Authorization)',
       'Tahmin Edilemeyen Tanımlayıcılar (UUID / GUID)',
@@ -96,7 +96,7 @@ export const PRACTITIONER_LABS: LabItem[] = [
         id: 3,
         title: 'Aşama 3: Gizli Belge & Bayrak Tespiti',
         objective: 'Açılan savunma direktifindeki FLAG değerini kopyalayın.',
-        guidance: 'Kayıtta beliren FLAG{b0l4_1d0r_u1d_3num_succ3ss} anahtarını teslim edin.',
+        guidance: 'Gizli savunma direktifinde dinamik olarak üretilen sistem bayrağını kopyalayıp doğrulayın.',
         isCompleted: false
       }
     ],
@@ -130,7 +130,7 @@ export const PRACTITIONER_LABS: LabItem[] = [
     objective: "Blog yorum formuna bir XSS yükü (<script>alert(1)</script> veya <img src=x onerror=alert(1)>) göndererek sayfaya kalıcı olarak kaydedin ve yönetici çerezini kapın.",
     startingUrl: 'https://corp-portal.local/post?id=1',
     tags: ['Stored XSS', 'Kalıcı XSS', 'Yorum Enjeksiyonu', 'Çerez Hırsızlığı'],
-    flag: 'FLAG{st0r3d_m4rkd0wn_xss_pwn3d}',
+    flagHash: '51b739145a43683fa8d36d18e7c23743',
     defenseMechanisms: [
       'Girdi Temizleme (Sanitization - DOMPurify)',
       'Bağlamsal Çıktı Kodlama',
@@ -189,7 +189,7 @@ export const PRACTITIONER_LABS: LabItem[] = [
     objective: "file parametresine '../../secret.txt' yazarak dizin atlama (Path Traversal) gerçekleştirin ve sunucudaki gizli sistem dosyasını okuyup bayrağı alın.",
     startingUrl: 'https://corp-portal.local/documents?file=report.pdf',
     tags: ['Path Traversal', 'Directory Traversal', 'Dosya İfşası', 'Key Leak'],
-    flag: 'FLAG{p4th_tr4v3rs4l_f1l3_l34k}',
+    flagHash: 'fdfcc2513217bd0e394eb3c707475aca',
     defenseMechanisms: [
       'Girdi Doğrulama ve ../ Karakterlerinin Ayıklanması',
       'İzin Verilen Dosya İsimleri Beyaz Listesi (Whitelist)',
@@ -214,7 +214,7 @@ export const PRACTITIONER_LABS: LabItem[] = [
         id: 3,
         title: 'Aşama 3: Gizli Dosya & Bayrak Tespiti',
         objective: 'Ekrana basılan secret.txt içeriğindeki sistem bayrağını yakalayın.',
-        guidance: "Kayıt içindeki FLAG{p4th_tr4v3rs4l_f1l3_l34k} anahtarını teslim edin.",
+        guidance: 'Gizli dosya içeriğinde dinamik olarak üretilen sistem bayrağını kopyalayıp doğrulayın.',
         isCompleted: false
       }
     ],

@@ -1,4 +1,5 @@
 import type { LinuxVfsState, VfsNode, CommandResult } from './types';
+import { synthesizeExploitFlag } from '../../lib/sandbox/flagVault';
 
 // Format numeric permission to standard Unix string (e.g. 0o755 -> -rwxr-xr-x)
 export function formatPermissions(node: VfsNode): string {
@@ -276,7 +277,7 @@ nasıl düşündüğünü ve nerede kilitlendiğini anlamaktır.
 Tebrikler dostum, artık terminalden korkmuyorsun!
 Çaylar hazır, mutfağa gel :)
 
-[FLAG: CTF{y_terminal_master_2026_conquered}]`
+[FLAG: __DYNAMIC_ROOT_FLAG__]`
           }
         }
       },
@@ -513,7 +514,15 @@ export function executeVfsCommand(
       if (!checkPermission(node, user, 'r')) {
         return { stdout: '', stderr: `cat: ${fileArg}: Permission denied`, exitCode: 1 };
       }
-      outputs.push(node.content || '');
+      const rawContent = node.content || '';
+      const resolvedContent =
+        user === 'root' && rawContent.includes('__DYNAMIC_ROOT_FLAG__')
+          ? rawContent.replace(
+              '__DYNAMIC_ROOT_FLAG__',
+              synthesizeExploitFlag('linux-root-final', 'root_uid_0_sudo') || '__LOCKED__'
+            )
+          : rawContent;
+      outputs.push(resolvedContent);
     }
     return { stdout: outputs.join('\n'), stderr: '', exitCode: 0 };
   }
@@ -530,7 +539,15 @@ export function executeVfsCommand(
     if (!checkPermission(node, user, 'r')) {
       return { stdout: '', stderr: `${cmd}: cannot open '${fileArg}': Permission denied`, exitCode: 1 };
     }
-    const lines = (node.content || '').split('\n');
+    const rawContent = node.content || '';
+    const resolvedContent =
+      user === 'root' && rawContent.includes('__DYNAMIC_ROOT_FLAG__')
+        ? rawContent.replace(
+            '__DYNAMIC_ROOT_FLAG__',
+            synthesizeExploitFlag('linux-root-final', 'root_uid_0_sudo') || '__LOCKED__'
+          )
+        : rawContent;
+    const lines = resolvedContent.split('\n');
     const slice = cmd === 'head' ? lines.slice(0, 10) : lines.slice(-10);
     return { stdout: slice.join('\n'), stderr: '', exitCode: 0 };
   }
@@ -550,7 +567,15 @@ export function executeVfsCommand(
     if (!checkPermission(node, user, 'r')) {
       return { stdout: '', stderr: `grep: ${fileArg}: Permission denied`, exitCode: 2 };
     }
-    const matches = (node.content || '').split('\n').filter(line => line.includes(pattern));
+    const rawContent = node.content || '';
+    const resolvedContent =
+      user === 'root' && rawContent.includes('__DYNAMIC_ROOT_FLAG__')
+        ? rawContent.replace(
+            '__DYNAMIC_ROOT_FLAG__',
+            synthesizeExploitFlag('linux-root-final', 'root_uid_0_sudo') || '__LOCKED__'
+          )
+        : rawContent;
+    const matches = resolvedContent.split('\n').filter(line => line.includes(pattern));
     return { stdout: matches.join('\n'), stderr: '', exitCode: matches.length > 0 ? 0 : 1 };
   }
 

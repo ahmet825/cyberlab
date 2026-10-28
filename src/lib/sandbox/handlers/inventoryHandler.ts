@@ -1,5 +1,6 @@
 import type { RouteContext, VirtualHttpResponse } from '../types';
 import { executeVulnerableQuery } from '../../sql/sqliteEngine';
+import { synthesizeExploitFlag } from '../flagVault';
 
 export async function handleInventory(ctx: RouteContext): Promise<VirtualHttpResponse> {
   const category = ctx.query['category'] || 'Electronics';
@@ -19,27 +20,37 @@ export async function handleInventory(ctx: RouteContext): Promise<VirtualHttpRes
 
   // Check for Blind Boolean SQLi confirmation (Challenge-11)
   const lowerCat = category.toLowerCase();
-  if (lowerCat.includes('system_secrets') || lowerCat.includes('root_vault_flag')) {
+  if (
+    lowerCat.includes('system_secrets') ||
+    lowerCat.includes('secure_vault') ||
+    lowerCat.includes('root_vault_flag') ||
+    lowerCat.includes('1=2') ||
+    lowerCat.includes('1 = 2')
+  ) {
+    const dynamicFlag = synthesizeExploitFlag('lab-sqli-blind-boolean', 'blind_boolean_diff') || '';
     blindFlagAlert = `
       <div class="badge-success" style="margin-bottom: 14px;">
-        <strong>KÖR SQL ENJEKSİYONU (Blind SQLi) BAŞARILI!</strong>
+        <strong>KÖR SQL ENJEKSİYONU (Blind Boolean SQLi) BAŞARILI!</strong>
         <p style="font-size: 12px; margin-top: 4px;">
-          system_secrets tablosundaki gizli kasa anahtarı deşifre edildi.
+          Doğru (True: 1=1) ve Yanlış (False: 1=2) mantıksal yanıt farkıyla gizli kasa anahtarı deşifre edildi.
         </p>
         <p style="font-size: 13px; margin-top: 6px;">
-          <strong>Bayrak:</strong> <code>FLAG{bl1nd_sqli_b00l3an_3xtr4ct10n}</code>
+          <strong>Bayrak:</strong> <code>${dynamicFlag}</code>
         </p>
       </div>`;
   }
 
-  const tableRows = rows.map((r) => `
-    <tr style="${String(r[2]).includes('FLAG') ? 'background: rgba(0, 255, 157, 0.12); font-weight: bold;' : ''}">
+  const tableRows = rows.map((r) => {
+    const hasFlag = r.some((cell: any) => String(cell).includes('FLAG'));
+    return `
+    <tr style="${hasFlag ? 'background: rgba(0, 255, 157, 0.12); font-weight: bold;' : ''}">
       <td>${r[0]}</td>
       <td>${r[1]}</td>
-      <td style="${String(r[2]).includes('FLAG') ? 'color: #00ff9d;' : ''}">${r[2]}</td>
+      <td style="${hasFlag ? 'color: #00ff9d;' : ''}">${r[2]}</td>
       <td>${r[3]}</td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 
   const html = ctx.createHtml(
     'Envanter // ACME Savunma Portalı',

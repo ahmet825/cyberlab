@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import type { LabItem, HttpRequestLog } from '../../types/lab';
 import { dispatchVirtualHttpRequest } from '../../lib/sandbox/virtualServer';
+import { verifyLabFlag, synthesizeExploitFlag } from '../../lib/sandbox/flagVault';
 
 type BrowserTab = 'view' | 'repeater' | 'network' | 'source' | 'cookies';
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -84,7 +85,7 @@ interface TargetBrowserProps {
   setCookie: (key: string, value: string) => void;
   httpLogs: HttpRequestLog[];
   onTriggerXssAlert: (payload: string) => void;
-  onLabSolved: (labId: string) => void;
+  onLabSolved: (labId: string, verifiedFlag?: string) => void;
   onLogHttpRequest: (req: any) => void;
   activeTab?: BrowserTab;
   onTabChange?: (tab: BrowserTab) => void;
@@ -127,6 +128,8 @@ export const TargetBrowser: React.FC<TargetBrowserProps> = ({
   const [reloadTick, setReloadTick] = useState(0);
   // Method/body of the navigation that is about to be rendered by the url effect (e.g. a form POST).
   const pendingRequestRef = useRef<{ method: HttpMethod; body?: string } | null>(null);
+  // Tracks which lab's starting URL has already been loaded so initial page load doesn't auto-complete stages
+  const lastLoadedLabIdRef = useRef<string | null>(null);
   // Used to drop responses of requests that were superseded by a newer navigation.
   const requestSeqRef = useRef(0);
 
@@ -159,7 +162,8 @@ export const TargetBrowser: React.FC<TargetBrowserProps> = ({
     targetUrl: string,
     method: HttpMethod = 'GET',
     bodyData?: string,
-    customHeaders?: Record<string, string>
+    customHeaders?: Record<string, string>,
+    isInitialLoad: boolean = false
   ) => {
     const seq = ++requestSeqRef.current;
     const targetHost = getHost(targetUrl);
@@ -202,7 +206,8 @@ export const TargetBrowser: React.FC<TargetBrowserProps> = ({
         responseStatus: resp.status,
         responseHeaders: resp.headers,
         responseBody: resp.html,
-        durationMs
+        durationMs,
+        isInitialLoad
       });
 
       // A newer navigation started while we were waiting: don't let this response overwrite it.
@@ -264,7 +269,10 @@ export const TargetBrowser: React.FC<TargetBrowserProps> = ({
     // exactly ONE request is made.
     const pending = pendingRequestRef.current;
     pendingRequestRef.current = null;
-    renderServerPage(url, pending?.method ?? 'GET', pending?.body);
+    const isInitialLoad =
+      (lastLoadedLabIdRef.current !== lab.id || (url === lab.startingUrl && reloadTick === 0)) && !pending;
+    lastLoadedLabIdRef.current = lab.id;
+    renderServerPage(url, pending?.method ?? 'GET', pending?.body, undefined, isInitialLoad);
   }, [url, reloadTick]);
 
   const navigateTo = (newUrl: string, request?: { method: HttpMethod; body?: string }) => {
@@ -301,7 +309,9 @@ export const TargetBrowser: React.FC<TargetBrowserProps> = ({
         const alertMsg = String(data.payload);
         onTriggerXssAlert(alertMsg);
         if (lab.category === 'XSS' || lab.id.includes('xss')) {
-          onLabSolved(lab.id);
+          const proof = lab.id === 'lab-xss-stored-markdown' ? 'xss_stored_comment_exec' : 'xss_reflect_dom_exec';
+          const dynFlag = synthesizeExploitFlag(lab.id, proof) || undefined;
+          onLabSolved(lab.id, dynFlag);
         }
       } else if (data.type === 'LAB_NAVIGATE' && typeof data.url === 'string') {
         const nextUrl = resolveUrl(data.url);
@@ -365,16 +375,16 @@ export const TargetBrowser: React.FC<TargetBrowserProps> = ({
     const cleanFlag = flagInput.trim();
     if (!cleanFlag) return;
 
-    if (cleanFlag === lab.flag) {
+    if (verifyLabFlag(lab.id, cleanFlag)) {
       setFlagFeedback({
         success: true,
-        msg: 'DOĞRU BAYRAK! Güvenlik bulmacası çözüldü!'
+        msg: 'DOĞRU BAYRAK (Hash Doğrulandı)! Güvenlik bulmacası çözüldü!'
       });
-      onLabSolved(lab.id);
+      onLabSolved(lab.id, cleanFlag);
     } else {
       setFlagFeedback({
         success: false,
-        msg: 'Hatalı bayrak! Zafiyeti istismar ederek sunucudaki gerçek FLAG{} değerini elde edin.'
+        msg: 'Hatalı bayrak! Zafiyeti istismar ederek dinamik üretilen FLAG{} değerini elde edin.'
       });
     }
   };
@@ -918,7 +928,15 @@ export const TargetBrowser: React.FC<TargetBrowserProps> = ({
                 </thead>
                 <tbody>
                   {Object.entries(cookies).map(([k, v]) => (
-                    <tr key={k} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.03)' }}>
+                    <tr
+                      key={k}
+                      onClick={() => {
+                        setNewCookieKey(k);
+                        setNewCookieVal(v);
+                      }}
+                      title="Düzenlemek için tıklayın"
+                      style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.03)', cursor: 'pointer' }}
+                    >
                       <td style={{ padding: '8px 12px', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{k}</td>
                       <td style={{ padding: '8px 12px', fontFamily: 'var(--font-mono)', color: '#fff' }}>{v}</td>
                     </tr>

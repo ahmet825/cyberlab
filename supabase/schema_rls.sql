@@ -78,6 +78,11 @@ CREATE POLICY "Kullanıcı kendi lab ilerlemesini güncelleyebilir"
   ON public.user_lab_progress FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Kullanıcı kendi lab ilerlemesini silebilir" ON public.user_lab_progress;
+CREATE POLICY "Kullanıcı kendi lab ilerlemesini silebilir"
+  ON public.user_lab_progress FOR DELETE
+  USING (auth.uid() = user_id);
+
 -- 6. USER_CAPTURED_FLAGS RLS
 ALTER TABLE public.user_captured_flags ENABLE ROW LEVEL SECURITY;
 
@@ -90,6 +95,11 @@ DROP POLICY IF EXISTS "Kullanıcı kendi bayrağını kaydedebilir" ON public.us
 CREATE POLICY "Kullanıcı kendi bayrağını kaydedebilir"
   ON public.user_captured_flags FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Kullanıcı kendi bayrağını silebilir" ON public.user_captured_flags;
+CREATE POLICY "Kullanıcı kendi bayrağını silebilir"
+  ON public.user_captured_flags FOR DELETE
+  USING (auth.uid() = user_id);
 
 -- ==============================================================================
 -- OTOMATİK KULLANICI PROFİLİ OLUŞTURMA TRIGGER'I (Yeni Kayıtlarda Çalışır)

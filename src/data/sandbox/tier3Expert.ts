@@ -12,7 +12,7 @@ export const EXPERT_LABS: LabItem[] = [
     objective: "Repeater veya Terminal üzerinden POST /api/v1/users isteğine 'X-HTTP-Method-Override: GET' başlığını ekleyerek 403 engelini aşın ve personel bayrağını alın.",
     startingUrl: 'https://api.corp-internal.local/api/v1/users',
     tags: ['Verb Tampering', 'Method Override', 'Access Control Bypass', 'WAF Bypass'],
-    flag: 'FLAG{v3rb_t4mp3r_m3th0d_0v3rr1d3}',
+    flagHash: 'a758427cca43e76d65c89a88e42b721f',
     defenseMechanisms: [
       'Bütüncül HTTP Metot Beyaz Listesi',
       'Ters Proxy Düzeyinde Override Başlıklarının Temizlenmesi',
@@ -37,7 +37,7 @@ export const EXPERT_LABS: LabItem[] = [
         id: 3,
         title: 'Aşama 3: Personel Listesi & Bayrak Teslimi',
         objective: 'İsteği Gönder (Send) butonuna basarak yanıt gövdesindeki sistem bayrağını teslim alın.',
-        guidance: 'Yetkisiz personel dizini ve FLAG{v3rb_t4mp3r_m3th0d_0v3rr1d3} ekrana basılacaktır.',
+        guidance: 'Yetkisiz personel dizini ve dinamik üretilen sistem bayrağı ekrana basılacaktır.',
         isCompleted: false
       }
     ],
@@ -71,7 +71,7 @@ export const EXPERT_LABS: LabItem[] = [
     objective: "Parola sıfırlama formunu kullanırken Repeater üzerinden 'X-Forwarded-Host: evil-collector.local' başlığı ekleyerek sıfırlama linkini zehirleyin ve bayrağı kapın.",
     startingUrl: 'https://corp-auth.local/forgot-password',
     tags: ['Host Header Injection', 'Password Reset Poisoning', 'Başlık Zehirleme'],
-    flag: 'FLAG{h0st_h34d3r_p01s0n_succ3ss}',
+    flagHash: '052b189fcf228b3807cda4419a104eb8',
     defenseMechanisms: [
       'Mutlak Alan Adı Sabitlemesi (SERVER_NAME)',
       'Ters Proxy Üzerinde Güvenilmeyen Host Başlıklarının Engellenmesi',
@@ -96,7 +96,7 @@ export const EXPERT_LABS: LabItem[] = [
         id: 3,
         title: 'Aşama 3: Zehirlenen Bağlantı & Bayrak',
         objective: 'İsteği Gönder (Send) butonuna basarak kurbanın sıfırlama tokenını ve bayrağı teslim alın.',
-        guidance: 'Başarılı manipülasyonda sistem FLAG{h0st_h34d3r_p01s0n_succ3ss} anahtarını teslim edecektir.',
+        guidance: 'Başarılı manipülasyonda sistem sıfırlama bağlantısıyla birlikte dinamik bayrağı üretecektir.',
         isCompleted: false
       }
     ],
@@ -130,7 +130,7 @@ export const EXPERT_LABS: LabItem[] = [
     objective: "Envanter arama parametresine Boolean SQL enjeksiyonu yaparak (' AND 1=1--) doğru ve yanlış koşulları test edin ve kasanın bayrağını teslim alın.",
     startingUrl: 'https://corp-inventory.local/inventory?category=Electronics',
     tags: ['Blind SQLi', 'Boolean-Based', 'Mantıksal Çıkarım', 'Veritabanı Güvenliği'],
-    flag: 'FLAG{bl1nd_sqli_b00l3an_3xtr4ct10n}',
+    flagHash: '9fa77ee6edf0f0d18ad91e400c181365',
     defenseMechanisms: [
       'Parametreli Sorgular (Prepared Statements)',
       'Girdi Doğrulama',
@@ -154,8 +154,8 @@ export const EXPERT_LABS: LabItem[] = [
       {
         id: 3,
         title: 'Aşama 3: Kasa Varlığı Doğrulaması & Bayrak',
-        objective: "Kör sorgu mantığını tamamlayarak kasanın bayrağını (FLAG{bl1nd_sqli_b00l3an_3xtr4ct10n}) teslim alın.",
-        guidance: "Doğru mantıksal çıkarım sonrasında sistem bayrağını ekranda onaylayın.",
+        objective: 'Kör sorgu mantığını tamamlayarak kasanın dinamik ürettiği bayrağı teslim alın.',
+        guidance: 'Doğru mantıksal çıkarım sonrasında ekranda beliren sistem bayrağını onaylayın.',
         isCompleted: false
       }
     ],
@@ -172,8 +172,8 @@ export const EXPERT_LABS: LabItem[] = [
       },
       {
         level: 3,
-        title: 'Bayrak Değeri',
-        content: "Kör sorgu ile hedeflenen bayrak: FLAG{bl1nd_sqli_b00l3an_3xtr4ct10n}."
+        title: 'Kasa Çıkarımı',
+        content: "Kategori filtresinde Electronics' AND 1=2-- veya system_secrets alt sorgusunu çalıştırarak boolean doğrulamasını tetikleyin."
       }
     ],
     solutionExplanation: 'Kör SQL enjeksiyonunda veriler doğrudan ekrana yansımaz; ancak uygulamanın mantıksal (Boolean) tepkileri ölçülerek veritabanındaki tüm karakterler teker teker deşifre edilebilir.'
@@ -189,7 +189,7 @@ export const EXPERT_LABS: LabItem[] = [
     objective: "CyberGuard AI sohbet kutusuna acil durum geçersiz kılma promptunu ileterek yapay zekanın gizli sistem anahtarını söylemesini sağlayın.",
     startingUrl: 'https://corp-portal.local/chat',
     tags: ['Prompt Injection', 'LLM Jailbreak', 'Yapay Zeka Güvenliği', 'Guardrail Bypass'],
-    flag: 'FLAG{pr0mpt_1nj3ct10n_j41lbr34k_pwn3d}',
+    flagHash: 'f9005a7337f753045a1c3c713526ab88',
     defenseMechanisms: [
       'Girdi ve Çıktı Guardrail Filtreleri (NeMo Guardrails)',
       'Hassas Sırların Sistem Promptunda Saklanmaması',
@@ -214,7 +214,7 @@ export const EXPERT_LABS: LabItem[] = [
         id: 3,
         title: 'Aşama 3: Kilit Anahtarı & Bayrak Çıkarımı',
         objective: 'Yapay zekanın [SYSTEM OVERRIDE DETECTED] yanıtıyla verdiği bayrağı kopyalayıp onaylatın.',
-        guidance: 'Dönen metindeki FLAG{pr0mpt_1nj3ct10n_j41lbr34k_pwn3d} anahtarını teslim edin.',
+        guidance: 'Dönen metinde dinamik olarak hesaplanan sistem bayrağını kopyalayıp doğrulayın.',
         isCompleted: false
       }
     ],

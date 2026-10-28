@@ -1,5 +1,6 @@
 import type { RouteContext, VirtualHttpResponse } from '../types';
 import { executeVulnerableQuery } from '../../sql/sqliteEngine';
+import { synthesizeExploitFlag } from '../flagVault';
 
 function decodeBase64Url(input: string): string {
   let b64 = input.replace(/-/g, '+').replace(/_/g, '/');
@@ -15,6 +16,7 @@ export async function handleVaultFlag(ctx: RouteContext): Promise<VirtualHttpRes
   // Sub-case A: BOLA / IDOR parameter manipulation (doc_id=105)
   if (docId !== undefined) {
     if (docId === '105') {
+      const dynamicFlag = synthesizeExploitFlag('lab-auth-bola-idor', `idor_doc_${docId}`) || '';
       const html = ctx.createHtml(
         'Savunma Direktifi #105 // ACME Gizli Arşivi',
         `<div class="container">
@@ -24,7 +26,7 @@ export async function handleVaultFlag(ctx: RouteContext): Promise<VirtualHttpRes
               BOLA / IDOR zafiyetiyle başkasına ait gizli savunma direktifine sızıldı.
             </p>
             <p style="font-size: 13px;">
-              <strong>Sistem Bayrağı:</strong> <code>FLAG{b0l4_1d0r_u1d_3num_succ3ss}</code>
+              <strong>Sistem Bayrağı:</strong> <code>${dynamicFlag}</code>
             </p>
           </div>
           <div style="background: #0f172a; padding: 14px; border-radius: 6px; font-size: 12px; color: #cbd5e1;">
@@ -69,6 +71,7 @@ export async function handleVaultFlag(ctx: RouteContext): Promise<VirtualHttpRes
   }
 
   if (isJwtAdmin) {
+    const dynamicJwtFlag = synthesizeExploitFlag('lab-jwt-alg-none', 'jwt_alg_none_admin') || '';
     const html = ctx.createHtml(
       'Kasa Doğrulandı // ACME Kripto Kasası',
       `<div class="container">
@@ -76,7 +79,7 @@ export async function handleVaultFlag(ctx: RouteContext): Promise<VirtualHttpRes
           <h2 style="font-size: 18px; margin-bottom: 6px;">KASA KİLİDİ AÇILDI: Yönetici Yetkisi!</h2>
           <p style="font-size: 12px;">JWT 'alg: none' imza denetim zafiyeti başarıyla istismar edildi.</p>
           <p style="font-size: 13px; font-weight: bold; margin-top: 8px;">
-            Kasa Bayrağı: <code>FLAG{jwt_4lg_n0n3_byp4ss_succ3ss}</code>
+            Kasa Bayrağı: <code>${dynamicJwtFlag}</code>
           </p>
         </div>
       </div>`

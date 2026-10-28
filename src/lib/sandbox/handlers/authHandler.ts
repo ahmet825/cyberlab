@@ -1,31 +1,38 @@
 import type { RouteContext, VirtualHttpResponse } from '../types';
 import { escapeHtml } from '../template';
+import { synthesizeExploitFlag } from '../flagVault';
 
 export async function handleForgotPassword(ctx: RouteContext): Promise<VirtualHttpResponse> {
   const email = ctx.query['email'] || '';
-  const host = ctx.headers['x-forwarded-host'] || ctx.headers['host'] || 'corp-auth.local';
+  const host = (ctx.headers['x-forwarded-host'] || ctx.headers['host'] || 'corp-auth.local').toLowerCase();
+  const isPoisoned =
+    host.includes('evil-collector.local') ||
+    Boolean(ctx.headers['x-forwarded-host']) ||
+    (host !== 'corp-auth.local' && host !== 'localhost' && host !== 'target-app.local');
+
   let resetNotification = '';
 
-  if (ctx.req.method === 'POST' && email) {
-    const isPoisoned = host.includes('evil-collector.local') || (host !== 'corp-auth.local' && host !== 'localhost');
+  if ((ctx.req.method === 'POST' && email) || isPoisoned) {
+    const targetEmail = email || 'victim_ceo@corp.internal';
     const resetToken = 'tok_reset_ceo_998124_alpha';
     const resetUrl = `https://${host}/reset-password?token=${resetToken}`;
 
     if (isPoisoned) {
+      const dynamicFlag = synthesizeExploitFlag('lab-recon-host-injection', 'host_poison_evil_collector') || '';
       resetNotification = `
         <div class="badge-success">
-          <strong>PAROLA SIFIRLAMA İSTEĞİ ZEHİRLENDİ!</strong>
+          <strong>PAROLA SIFIRLAMA İSTEĞİ ZEHİRLENDİ! (${escapeHtml(targetEmail)})</strong>
           <p style="font-size: 12px; margin-top: 4px;">
             E-posta bağlantısı saldırgan sunucusuna yönlendirildi: <code>${escapeHtml(resetUrl)}</code>
           </p>
           <p style="font-size: 12px; margin-top: 6px;">
-            <strong>Bayrak:</strong> <code>FLAG{h0st_h34d3r_p01s0n_succ3ss}</code>
+            <strong>Bayrak:</strong> <code>${dynamicFlag}</code>
           </p>
         </div>`;
     } else {
       resetNotification = `
         <div class="badge-success">
-          <strong>Sıfırlama E-postası Gönderildi!</strong>
+          <strong>Sıfırlama E-postası Gönderildi! (${escapeHtml(targetEmail)})</strong>
           <p style="font-size: 12px; margin-top: 4px;">
             Bağlantı: <code>${escapeHtml(resetUrl)}</code>
           </p>
@@ -45,7 +52,7 @@ export async function handleForgotPassword(ctx: RouteContext): Promise<VirtualHt
 
       <form action="/forgot-password" method="POST">
         <label style="display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px;">E-Posta:</label>
-        <input type="text" name="email" value="${escapeHtml(email)}" placeholder="victim_ceo@corp.internal">
+        <input type="text" name="email" value="${escapeHtml(email || 'victim_ceo@corp.internal')}" placeholder="victim_ceo@corp.internal">
         <button type="submit" style="width: 100%; margin-top: 6px;">Sıfırlama Bağlantısı Gönder</button>
       </form>
 

@@ -110,7 +110,7 @@ export const fetchUserLabProgress = async (
       if (row.is_solved) {
         solvedLabIds.push(row.lab_id);
       }
-      if (Array.isArray(row.completed_stages)) {
+      if (Array.isArray(row.completed_stages) && row.completed_stages.length > 0) {
         stageProgress[row.lab_id] = row.completed_stages;
       }
     }
@@ -288,4 +288,60 @@ export const syncLocalProgressWithCloud = async (
     mergedStages,
     mergedFlags
   };
+};
+
+/**
+ * Reset a single lab's progress and captured flag in Supabase RLS database
+ */
+export const resetSingleLabCloudProgress = async (
+  userId: string,
+  labId: string
+): Promise<boolean> => {
+  if (!isSupabaseConfigured() || !userId || !labId) return false;
+
+  try {
+    await supabase
+      .from('user_lab_progress')
+      .update({
+        completed_stages: [],
+        is_solved: false,
+        solved_at: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId)
+      .eq('lab_id', labId);
+
+    await supabase.from('user_lab_progress').delete().eq('user_id', userId).eq('lab_id', labId);
+    await supabase.from('user_captured_flags').delete().eq('user_id', userId).eq('lab_id', labId);
+    return true;
+  } catch (err) {
+    console.warn(`[Supabase RLS] resetSingleLabCloudProgress exception for ${labId}:`, err);
+    return false;
+  }
+};
+
+/**
+ * Reset all lab progress and captured flags for a user in Supabase RLS database
+ */
+export const resetUserCloudProgress = async (userId: string): Promise<boolean> => {
+  if (!isSupabaseConfigured() || !userId) return false;
+
+  try {
+    await supabase
+      .from('user_lab_progress')
+      .update({
+        completed_stages: [],
+        is_solved: false,
+        solved_at: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId);
+
+    await supabase.from('user_lab_progress').delete().eq('user_id', userId);
+    await supabase.from('user_captured_flags').delete().eq('user_id', userId);
+    return true;
+  } catch (err) {
+    console.warn('[Supabase RLS] resetUserCloudProgress exception:', err);
+    return false;
+  }
 };

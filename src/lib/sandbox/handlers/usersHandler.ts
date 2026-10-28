@@ -1,4 +1,5 @@
 import type { RouteContext, VirtualHttpResponse } from '../types';
+import { synthesizeExploitFlag } from '../flagVault';
 
 export async function handleUsers(ctx: RouteContext): Promise<VirtualHttpResponse> {
   const method = ctx.req.method.toUpperCase();
@@ -37,13 +38,14 @@ export async function handleUsers(ctx: RouteContext): Promise<VirtualHttpRespons
   }
 
   // Bypass successful!
+  const dynamicFlag = synthesizeExploitFlag('lab-recon-verb-tampering', 'verb_override_get') || '';
   const html = ctx.createHtml(
     'Personel API // ACME Savunma Portalı',
     `<div class="container">
       <div class="badge-success">
         <h3 style="font-size: 15px; margin-bottom: 4px;">Erişim Doğrulandı: Protokol Kuralı Aşıldı!</h3>
         <p style="font-size: 12px; margin-bottom: 8px;">
-          HTTP Verb Tampering başarılı. Sistem Bayrağı: <code>FLAG{v3rb_t4mp3r_m3th0d_0v3rr1d3}</code>
+          HTTP Verb Tampering başarılı. Sistem Bayrağı: <code>${dynamicFlag}</code>
         </p>
       </div>
 

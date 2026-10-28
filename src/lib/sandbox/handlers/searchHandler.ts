@@ -1,7 +1,15 @@
 import type { RouteContext, VirtualHttpResponse } from '../types';
+import { synthesizeExploitFlag } from '../flagVault';
 
 export async function handleSearch(ctx: RouteContext): Promise<VirtualHttpResponse> {
   const q = ctx.query['q'] || '';
+
+  const isXssPayload =
+    /<script|<img|<svg|<iframe|<body|onerror\s*=|onload\s*=|onmouseover\s*=|onfocus\s*=|javascript:\s*alert|alert\s*\(/i.test(
+      q
+    );
+
+  const dynamicFlag = isXssPayload ? synthesizeExploitFlag('lab-xss-multi-filter', 'xss_reflect_dom_exec') : null;
 
   let searchResultsHtml = '';
   if (q) {
@@ -12,6 +20,13 @@ export async function handleSearch(ctx: RouteContext): Promise<VirtualHttpRespon
         <p style="font-size: 11px; color: #94a3b8;">
           Sorgu doğrudan DOM çıktısına yansıtıldı.
         </p>
+        ${
+          dynamicFlag
+            ? `<div style="margin-top: 10px; padding: 8px 10px; background: rgba(0, 255, 157, 0.12); border: 1px solid rgba(0, 255, 157, 0.35); border-radius: 4px;">
+                <strong>[REFLECTED XSS DOĞRULANDI] Sistem Bayrağı:</strong> <code style="color: #00ff9d;">${dynamicFlag}</code>
+              </div>`
+            : ''
+        }
       </div>`;
   }
 
@@ -31,25 +46,16 @@ export async function handleSearch(ctx: RouteContext): Promise<VirtualHttpRespon
       <div style="margin-top: 20px;">
         ${searchResultsHtml}
       </div>
-
-      <!-- Kasa belirteci ve bayrak -->
-      <script>
-        window.vault_xss_flag = "FLAG{xss_b4s1c_r3fl3ct_pwn3d}";
-        document.cookie = "xss_session=FLAG{xss_b4s1c_r3fl3ct_pwn3d}; path=/";
-      </script>
     </div>`
   );
 
   const responseHeaders: Record<string, string> = { 'Content-Type': 'text/html; charset=utf-8' };
-  const responseCookies: Record<string, string> = {
-    xss_session: 'FLAG{xss_b4s1c_r3fl3ct_pwn3d}'
-  };
 
   return {
     status: 200,
     statusText: 'OK',
     headers: responseHeaders,
-    setCookies: responseCookies,
+    ...(dynamicFlag ? { setCookies: { xss_session: dynamicFlag } } : {}),
     html
   };
 }

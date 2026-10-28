@@ -31,86 +31,42 @@ import {
   Shield
 } from 'lucide-react';
 import { resetDatabase } from './lib/sql/sqliteEngine';
+import { resetBlogComments } from './lib/sandbox/handlers/blogHandler';
 import { dispatchVirtualHttpRequest } from './lib/sandbox/virtualServer';
 import { supabase, isSupabaseConfigured, signOutUser } from './lib/supabase/supabaseClient';
 import {
   saveLabProgress,
   saveCapturedFlag,
-  syncLocalProgressWithCloud
+  syncLocalProgressWithCloud,
+  resetSingleLabCloudProgress,
+  resetUserCloudProgress
 } from './lib/supabase/dbService';
 
 // All labs flattened at module scope to preserve stable reference
 const allLabs = CURRICULUM_TRACKS.flatMap((track) => track.labs);
 
 export const App: React.FC = () => {
-  const activeLabIdRef = React.useRef<string | null>(null);
+  const activeLabIdRef = React.useRef<string | null>(allLabs[0].id);
 
-  // Active lab state
-  const [currentLab, setCurrentLab] = useState<LabItem>(() => {
-    try {
-      const savedId = localStorage.getItem('hackerarena_last_active_lab');
-      if (savedId) {
-        const found = allLabs.find((l) => l.id === savedId);
-        if (found) {
-          activeLabIdRef.current = found.id;
-          return found;
-        }
-      }
-    } catch {
-      // fallback
-    }
-    activeLabIdRef.current = allLabs[0].id;
-    return allLabs[0];
-  });
+  // Active lab state (always starts clean from Challenge-01 unless URL hash specifies otherwise)
+  const [currentLab, setCurrentLab] = useState<LabItem>(() => allLabs[0]);
 
-  // Solved labs state with localStorage persistence
-  const [solvedLabIds, setSolvedLabIds] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem('hackerarena_solved');
-      return saved ? new Set(JSON.parse(saved)) : new Set<string>();
-    } catch {
-      return new Set<string>();
-    }
-  });
+  // Solved labs state (starts clean; synced with Supabase only for authenticated users)
+  const [solvedLabIds, setSolvedLabIds] = useState<Set<string>>(() => new Set<string>());
 
-  // Multi-stage progression per lab persistence
-  const [stageProgress, setStageProgress] = useState<Record<string, number[]>>(() => {
-    try {
-      const saved = localStorage.getItem('hackerarena_stage_progress');
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
+  // Multi-stage progression per lab
+  const [stageProgress, setStageProgress] = useState<Record<string, number[]>>(() => ({}));
 
-  // Captured flags vault persistence
-  const [capturedFlags, setCapturedFlags] = useState<Record<string, { flag: string; solvedAt: string }>>(() => {
-    try {
-      const saved = localStorage.getItem('hackerarena_captured_flags');
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
+  // Captured flags vault
+  const [capturedFlags, setCapturedFlags] = useState<Record<string, { flag: string; solvedAt: string }>>(() => ({}));
 
   // Target Browser URL
-  const [browserUrl, setBrowserUrl] = useState<string>(() => {
-    try {
-      const savedId = localStorage.getItem('hackerarena_last_active_lab');
-      if (savedId) {
-        const found = allLabs.find((l) => l.id === savedId);
-        if (found) return found.startingUrl;
-      }
-    } catch {
-      // fallback
-    }
-    return allLabs[0].startingUrl;
-  });
+  const [browserUrl, setBrowserUrl] = useState<string>(() => allLabs[0].startingUrl);
 
   // Target Cookies
   const [cookies, setCookies] = useState<Record<string, string>>({
     session_id: 'sess_99a8b1c4',
-    access_tier: 'guest'
+    user_role: 'guest'
   });
 
   // HTTP Request Logs (DevTools)
@@ -140,15 +96,8 @@ export const App: React.FC = () => {
   // View switcher: default is 'landing' as requested
   const [currentView, setCurrentView] = useState<HubView>('landing');
 
-  // User Profile (unlocking all 12 labs)
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
-    try {
-      const saved = localStorage.getItem('hackerarena_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  // User Profile (unlocking all 12 labs; verified via Supabase session)
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   // Auth Modal State
   const [authModal, setAuthModal] = useState<{ isOpen: boolean; reasonMessage?: string }>({
@@ -183,30 +132,55 @@ export const App: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
 
+    // Remove legacy localStorage progress keys so old test progress never leaks into production
+    localStorage.removeItem('hackerarena_solved');
+    localStorage.removeItem('hackerarena_stage_progress');
+    localStorage.removeItem('hackerarena_captured_flags');
+    localStorage.removeItem('hackerarena_last_active_lab');
+
+    const syncUserSessionProgress = async (sbUser: any) => {
+      const profile: UserProfile = {
+        id: sbUser.id,
+        email: sbUser.email || '',
+        username: sbUser.user_metadata?.username || sbUser.email?.split('@')[0] || 'operatör',
+        role: (sbUser.user_metadata?.role as any) || 'Practitioner',
+        provider: 'email',
+        avatarUrl: sbUser.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${sbUser.id}`,
+        createdAt: sbUser.created_at || new Date().toISOString()
+      };
+      setCurrentUser(profile);
+      localStorage.setItem('hackerarena_user', JSON.stringify(profile));
+
+      // One-time clean deploy reset to wipe pre-deployment test progress from Supabase Cloud DB
+      const cleanDeployKey = `hackerarena_clean_deploy_v3_${profile.id}`;
+      if (localStorage.getItem(cleanDeployKey) !== '1') {
+        localStorage.setItem(cleanDeployKey, '1');
+        await resetUserCloudProgress(profile.id);
+        if (isMounted) {
+          setSolvedLabIds(new Set());
+          setStageProgress({});
+          setCapturedFlags({});
+        }
+        return;
+      }
+
+      const res = await syncLocalProgressWithCloud(profile.id, new Set(), {}, {});
+      if (isMounted) {
+        setSolvedLabIds(res.mergedSolved);
+        setStageProgress(res.mergedStages);
+        setCapturedFlags(res.mergedFlags);
+      }
+    };
+
     const initAuthAndSync = async () => {
       if (isSupabaseConfigured()) {
         try {
           const { data } = await supabase.auth.getSession();
           if (data?.session?.user && isMounted) {
-            const sbUser = data.session.user;
-            const profile: UserProfile = {
-              id: sbUser.id,
-              email: sbUser.email || '',
-              username: sbUser.user_metadata?.username || sbUser.email?.split('@')[0] || 'operatör',
-              role: (sbUser.user_metadata?.role as any) || 'Practitioner',
-              provider: 'email',
-              avatarUrl: sbUser.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${sbUser.id}`,
-              createdAt: sbUser.created_at || new Date().toISOString()
-            };
-            setCurrentUser(profile);
-            localStorage.setItem('hackerarena_user', JSON.stringify(profile));
-
-            const res = await syncLocalProgressWithCloud(profile.id, solvedLabIds, stageProgress, capturedFlags);
-            if (isMounted) {
-              setSolvedLabIds(res.mergedSolved);
-              setStageProgress(res.mergedStages);
-              setCapturedFlags(res.mergedFlags);
-            }
+            await syncUserSessionProgress(data.session.user);
+          } else if (isMounted) {
+            setCurrentUser(null);
+            localStorage.removeItem('hackerarena_user');
           }
         } catch (err) {
           console.warn('[Supabase RLS] Init auth warning:', err);
@@ -216,27 +190,15 @@ export const App: React.FC = () => {
 
     initAuthAndSync();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user && isMounted) {
-        const sbUser = session.user;
-        const profile: UserProfile = {
-          id: sbUser.id,
-          email: sbUser.email || '',
-          username: sbUser.user_metadata?.username || sbUser.email?.split('@')[0] || 'operatör',
-          role: (sbUser.user_metadata?.role as any) || 'Practitioner',
-          provider: 'email',
-          avatarUrl: sbUser.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${sbUser.id}`,
-          createdAt: sbUser.created_at || new Date().toISOString()
-        };
-        setCurrentUser(profile);
-        localStorage.setItem('hackerarena_user', JSON.stringify(profile));
-
-        const res = await syncLocalProgressWithCloud(profile.id, solvedLabIds, stageProgress, capturedFlags);
-        if (isMounted) {
-          setSolvedLabIds(res.mergedSolved);
-          setStageProgress(res.mergedStages);
-          setCapturedFlags(res.mergedFlags);
-        }
+        await syncUserSessionProgress(session.user);
+      } else if (event === 'SIGNED_OUT' && isMounted) {
+        setCurrentUser(null);
+        setSolvedLabIds(new Set());
+        setStageProgress({});
+        setCapturedFlags({});
+        localStorage.removeItem('hackerarena_user');
       }
     });
 
@@ -245,11 +207,6 @@ export const App: React.FC = () => {
       authListener?.subscription?.unsubscribe();
     };
   }, []);
-
-  // Save solved labs
-  useEffect(() => {
-    localStorage.setItem('hackerarena_solved', JSON.stringify(Array.from(solvedLabIds)));
-  }, [solvedLabIds]);
 
   // SSG Hash Router & Deep-Link Synchronizer
   useEffect(() => {
@@ -347,10 +304,9 @@ export const App: React.FC = () => {
     activeLabIdRef.current = lab.id;
     setCurrentLab(lab);
     setBrowserUrl(lab.startingUrl);
-    localStorage.setItem('hackerarena_last_active_lab', lab.id);
     setCookies({
       session_id: 'sess_99a8b1c4',
-      access_tier: 'guest'
+      user_role: 'guest'
     });
     if (window.location.hash !== `#/pentest/${lab.id}`) {
       window.location.hash = `#/pentest/${lab.id}`;
@@ -365,7 +321,6 @@ export const App: React.FC = () => {
         ? current.filter((id) => id !== stageId)
         : [...current, stageId];
       const nextState = { ...prev, [labId]: updated };
-      localStorage.setItem('hackerarena_stage_progress', JSON.stringify(nextState));
       if (currentUser?.id) {
         saveLabProgress(currentUser.id, labId, updated, solvedLabIds.has(labId));
       }
@@ -383,31 +338,24 @@ export const App: React.FC = () => {
 
 
   // Lab solved trigger (PortSwigger banner + confetti)
-  const handleLabSolved = (labId: string) => {
+  const handleLabSolved = (labId: string, verifiedFlag?: string) => {
     if (!solvedLabIds.has(labId)) {
       setSolvedLabIds((prev) => new Set([...prev, labId]));
 
       const targetLab = allLabs.find((l) => l.id === labId);
       if (targetLab) {
         const allStages = targetLab.stages.map((s) => s.id);
-        setStageProgress((prev) => {
-          const next = { ...prev, [labId]: allStages };
-          localStorage.setItem('hackerarena_stage_progress', JSON.stringify(next));
-          return next;
-        });
+        setStageProgress((prev) => ({ ...prev, [labId]: allStages }));
 
-        setCapturedFlags((prev) => {
-          const next = {
-            ...prev,
-            [labId]: { flag: targetLab.flag, solvedAt: new Date().toLocaleTimeString() }
-          };
-          localStorage.setItem('hackerarena_captured_flags', JSON.stringify(next));
-          return next;
-        });
+        const recordedToken = verifiedFlag || `HASH_VERIFIED:${targetLab.flagHash.slice(0, 12)}`;
+        setCapturedFlags((prev) => ({
+          ...prev,
+          [labId]: { flag: recordedToken, solvedAt: new Date().toLocaleTimeString() }
+        }));
 
         if (currentUser?.id) {
           saveLabProgress(currentUser.id, labId, allStages, true);
-          saveCapturedFlag(currentUser.id, labId, targetLab.flag);
+          saveCapturedFlag(currentUser.id, labId, recordedToken);
         }
       }
 
@@ -441,14 +389,33 @@ export const App: React.FC = () => {
     setXssModal({ isOpen: true, payload });
   };
 
-  // Reset current lab
+  // Reset current lab (including its solved status and stage progress)
   const handleResetLab = () => {
     setBrowserUrl(currentLab.startingUrl);
     setCookies({
       session_id: 'sess_99a8b1c4',
-      access_tier: 'guest'
+      user_role: 'guest'
     });
     setHttpLogs([]);
+    setSolvedLabIds((prev) => {
+      const next = new Set(prev);
+      next.delete(currentLab.id);
+      return next;
+    });
+    setStageProgress((prev) => {
+      const next = { ...prev };
+      delete next[currentLab.id];
+      return next;
+    });
+    setCapturedFlags((prev) => {
+      const next = { ...prev };
+      delete next[currentLab.id];
+      return next;
+    });
+    if (currentUser?.id) {
+      resetSingleLabCloudProgress(currentUser.id, currentLab.id);
+    }
+    resetBlogComments();
     resetDatabase();
   };
 
@@ -462,6 +429,7 @@ export const App: React.FC = () => {
     responseHeaders: Record<string, string>;
     responseBody: string;
     durationMs?: number;
+    isInitialLoad?: boolean;
   }) => {
     const newLog: HttpRequestLog = {
       id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
@@ -471,8 +439,8 @@ export const App: React.FC = () => {
     };
     setHttpLogs((prev) => [newLog, ...prev.slice(0, 49)]);
 
-    // Automated Progress-Aware Stage Tracker
-    if (currentLab) {
+    // Automated Progress-Aware Stage Tracker (skip automatic initial page load of startingUrl)
+    if (currentLab && !req.isInitialLoad) {
       const alreadyDone = stageProgress[currentLab.id] || [];
       const evalRes = evaluateLabProgress(
         currentLab,
@@ -493,7 +461,6 @@ export const App: React.FC = () => {
           const prevStages = prev[currentLab.id] || [];
           const updated = Array.from(new Set([...prevStages, ...evalRes.newlyCompletedStages]));
           const next = { ...prev, [currentLab.id]: updated };
-          localStorage.setItem('hackerarena_stage_progress', JSON.stringify(next));
           if (currentUser?.id) {
             saveLabProgress(currentUser.id, currentLab.id, updated, solvedLabIds.has(currentLab.id));
           }
@@ -502,7 +469,7 @@ export const App: React.FC = () => {
       }
 
       if (evalRes.isSolved && !solvedLabIds.has(currentLab.id)) {
-        handleLabSolved(currentLab.id);
+        handleLabSolved(currentLab.id, evalRes.capturedFlag);
       }
     }
 
@@ -614,6 +581,13 @@ export const App: React.FC = () => {
   const handleLogout = async () => {
     await signOutUser();
     setCurrentUser(null);
+    setSolvedLabIds(new Set());
+    setStageProgress({});
+    setCapturedFlags({});
+    localStorage.removeItem('hackerarena_solved');
+    localStorage.removeItem('hackerarena_stage_progress');
+    localStorage.removeItem('hackerarena_captured_flags');
+    localStorage.removeItem('hackerarena_last_active_lab');
   };
 
   const isCurrentSolved = solvedLabIds.has(currentLab.id);
@@ -828,7 +802,7 @@ export const App: React.FC = () => {
                 SIRA
               </span>
               <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)' }}>
-                1 / 1 Aktif (Diğerleri Yakında)
+                Challenge {allLabs.findIndex((l) => l.id === currentLab.id) + 1} / {allLabs.length}
               </span>
             </div>
 
@@ -1269,9 +1243,17 @@ export const App: React.FC = () => {
         setDeepInfraModel={handleSaveDeepInfraModel}
         geminiApiKey={geminiApiKey}
         setGeminiApiKey={handleSaveGeminiKey}
-        onResetAllProgress={() => {
+        onResetAllProgress={async () => {
           setSolvedLabIds(new Set());
+          setStageProgress({});
+          setCapturedFlags({});
           localStorage.removeItem('hackerarena_solved');
+          localStorage.removeItem('hackerarena_stage_progress');
+          localStorage.removeItem('hackerarena_captured_flags');
+          localStorage.removeItem('hackerarena_last_active_lab');
+          if (currentUser?.id) {
+            await resetUserCloudProgress(currentUser.id);
+          }
           setIsSettingsOpen(false);
         }}
       />

@@ -1,6 +1,10 @@
 import type { RouteContext, VirtualHttpResponse } from '../types';
+import { synthesizeExploitFlag } from '../flagVault';
 
 export async function handleProfile(ctx: RouteContext): Promise<VirtualHttpResponse> {
+  const rawPath = decodeURIComponent(ctx.req.path || '');
+  const isDomXss = /<script|<img|<svg|onerror\s*=|onload\s*=|alert\s*\(/i.test(rawPath);
+  const dynamicFlag = isDomXss ? synthesizeExploitFlag('lab-dom-xss-json', 'dom_xss_json_sink') : null;
   const html = ctx.createHtml(
     'Kullanıcı Profili // ACME Savunma Portalı',
     `<div class="container">
@@ -46,11 +50,9 @@ export async function handleProfile(ctx: RouteContext): Promise<VirtualHttpRespo
     statusText: 'OK',
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Set-Cookie': 'admin_session=FLAG{d0m_xss_js0n_p4rs3_s1nk}; Path=/'
+      ...(dynamicFlag ? { 'Set-Cookie': `admin_session=${dynamicFlag}; Path=/` } : {})
     },
-    setCookies: {
-      admin_session: 'FLAG{d0m_xss_js0n_p4rs3_s1nk}'
-    },
+    ...(dynamicFlag ? { setCookies: { admin_session: dynamicFlag } } : {}),
     html
   };
 }
