@@ -75,7 +75,7 @@ const STORY_FRAMES: StoryFrame[] = [
       '56k modemin o tiz cızırtısını kimse duymasın diye üstüne yastık bastırırdım. Bağlantı kurulduğunda içimi kaplayan ürperti: Dünya artık parmaklarımın ucundaydı.',
       'MS-DOS komut satırına ilk defa "ping 127.0.0.1" yazdığımda gelen yanıtla kalbim yerinden çıkacaktı. O gece yeşil imlecin siyah ekranda yanıp sönüşüne tutuldum.'
     ],
-    imageSrc: '/story/frame_1_childhood.jpg',
+    imageSrc: '/story/frame_1_childhood.webp',
     themeColor: '#f59e0b',
     secondaryColor: '#d97706',
     bgGlow: 'rgba(245, 158, 11, 0.22)',
@@ -104,7 +104,7 @@ const STORY_FRAMES: StoryFrame[] = [
       'Konsola geçip "whoami" yazdım. Ekran tek kelimeyle yanıt verdi: "root". O an kendimi bir kullanıcı değil, tüm sistemin mutlak hakimi sandım.',
       'IRC kanallarında geziniyor, nmap ile port tarıyor, basit Perl scriptleriyle sunucuların kapısını çalıyordum. Ergenliğin getirdiği en tehlikeli, kibirli zirveydi bu.'
     ],
-    imageSrc: '/story/frame_2_root.jpg',
+    imageSrc: '/story/frame_2_root.webp',
     themeColor: '#00ff9d',
     secondaryColor: '#10b981',
     bgGlow: 'rgba(0, 255, 157, 0.22)',
@@ -134,7 +134,7 @@ const STORY_FRAMES: StoryFrame[] = [
       'Ekran kilitlendi. IRC sunucusundan kalıcı ban fırladı. Tam o anda, odamın penceresinden sokaktan geçen polis arabasının kırmızı-mavi ışıkları duvara vurdu, acı bir siren sesi geceyi yardı!',
       'Kanım dondu. "Polis geldi, beni hapse atacaklar" diyerek titreyen ellerimle kasanın fişini prizden asılarak kopardım. Sabaha kadar yorganın altında ağlayarak bekledim. O gece hacker değil, sadece hadsiz bir çocuk olduğumu anladım.'
     ],
-    imageSrc: '/story/frame_3_panic.jpg',
+    imageSrc: '/story/frame_3_panic.webp',
     themeColor: '#ff0055',
     secondaryColor: '#ef4444',
     bgGlow: 'rgba(255, 0, 85, 0.28)',
@@ -164,7 +164,7 @@ const STORY_FRAMES: StoryFrame[] = [
       'Masama TCP/IP RFC dökümanlarını, x86 Assembly ve C kitaplarını yığdım. Wireshark\'ta her baytı ezberledim. GDB ile bellek adreslerini ve buffer overflow taşmalarını adım adım inceledim.',
       'Geceler süren emekler sonucunda ilk 0-day zafiyetimi kendi ellerimle yazdığım exploit ile kanıtladığım an... Artık korkan o çocuk değildim. Kodun karanlık tarafını da ışığını da bilen bir mühendistim.'
     ],
-    imageSrc: '/story/frame_4_mastery.jpg',
+    imageSrc: '/story/frame_4_mastery.webp',
     themeColor: '#00f0ff',
     secondaryColor: '#0284c7',
     bgGlow: 'rgba(0, 240, 255, 0.24)',
@@ -194,7 +194,7 @@ const STORY_FRAMES: StoryFrame[] = [
       'Burada içi boş slaytlar yok. WebAssembly ile doğrudan tarayıcında yaşayan 12 adet gerçek, kusurlu ve zaafiyetli sistem (Kusurlu Lab) var. Header Spoofing\'den Blind SQLi\'ye, WAF Evasion\'dan LLM Jailbreak\'e...',
       'Çarkı çevirdin, hikayemi dinledin. Şimdi o odadaki eski masanın başına sen oturuyorsun. Terminal senin, klavye senin. İlk zafiyeti kırmaya hazır mısın?'
     ],
-    imageSrc: '/story/frame_5_arena.jpg',
+    imageSrc: '/story/frame_5_arena.webp',
     themeColor: '#c084fc',
     secondaryColor: '#fbbf24',
     bgGlow: 'rgba(192, 132, 252, 0.25)',

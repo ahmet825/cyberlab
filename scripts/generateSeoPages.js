@@ -896,8 +896,8 @@ function buildLabHtml(lab) {
   <meta property="og:url" content="${canonicalUrl}" />
   <meta property="og:title" content="${lab.metaTitle}" />
   <meta property="og:description" content="${lab.metaDescription}" />
-  <meta property="og:image" content="${SITE_URL}/story/frame_5_arena.jpg" />
-  <meta property="og:site_name" content="SiberAdam" />
+  <meta property="og:image" content="${SITE_URL}/story/frame_5_arena.webp" />
+  <meta property="og:site_name" content="Siber Güvenlik Dersleri" />
   <meta property="og:locale" content="tr_TR" />
 
   <!-- Twitter Cards -->
@@ -905,7 +905,7 @@ function buildLabHtml(lab) {
   <meta name="twitter:url" content="${canonicalUrl}" />
   <meta name="twitter:title" content="${lab.metaTitle}" />
   <meta name="twitter:description" content="${lab.metaDescription}" />
-  <meta name="twitter:image" content="${SITE_URL}/story/frame_5_arena.jpg" />
+  <meta name="twitter:image" content="${SITE_URL}/story/frame_5_arena.webp" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1049,7 +1049,7 @@ function buildLinuxHtml() {
   <meta property="og:url" content="${canonicalUrl}" />
   <meta property="og:title" content="${LINUX_PAGE.metaTitle}" />
   <meta property="og:description" content="${LINUX_PAGE.metaDescription}" />
-  <meta property="og:image" content="${SITE_URL}/story/frame_2_root.jpg" />
+  <meta property="og:image" content="${SITE_URL}/story/frame_2_root.webp" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1181,9 +1181,9 @@ function buildLabsIndexHtml() {
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${canonicalUrl}" />
-  <meta property="og:title" content="Uygulamalı Web Güvenliği Laboratuvarları Kataloğu // SiberAdam" />
-  <meta property="og:description" content="12 interaktif laboratuvarda canlı HTTP analizi, Burp Repeater simülasyonu ve Web Terminal ile uygulamalı siber güvenlik eğitimi." />
-  <meta property="og:image" content="${SITE_URL}/story/frame_5_arena.jpg" />
+  <meta property="og:title" content="Uygulamalı Web Güvenliği Laboratuvarları Kataloğu // Siber Güvenlik Dersleri" />
+  <meta property="og:description" content="15 interaktif laboratuvarda canlı HTTP analizi, Burp Repeater simülasyonu ve Web Terminal ile uygulamalı siber güvenlik eğitimi." />
+  <meta property="og:image" content="${SITE_URL}/story/frame_5_arena.webp" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
