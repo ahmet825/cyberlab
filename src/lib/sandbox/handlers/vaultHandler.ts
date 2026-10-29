@@ -36,11 +36,19 @@ export async function handleVaultFlag(ctx: RouteContext): Promise<VirtualHttpRes
       );
       return { status: 200, statusText: 'OK', headers: { 'Content-Type': 'text/html; charset=utf-8' }, html };
     } else {
+      const isLowPrivDoc = docId === '101' || docId === '102' || docId === '103' || docId === '104';
+      const docSubject = docId === '101'
+        ? 'Genel Ağ Politikaları (Yazar: sysadmin_chief)'
+        : docId === '102'
+        ? 'Yazılım Güvenlik Kontrol Listesi (Yazar: dev_auditor)'
+        : 'Standart personel çalışma direktifi. Gizli veri içermez.';
+
       const html = ctx.createHtml(
         `Doküman #${docId} // ACME Arşivi`,
         `<div class="container">
           <h3 style="font-size: 15px; margin-bottom: 6px;">Personel Dokümanı: #${docId}</h3>
-          <p style="font-size: 12px; color: #94a3b8;">Standart personel çalışma direktifi. Gizli veri içermez.</p>
+          <p style="font-size: 12px; color: #94a3b8;">${docSubject}</p>
+          ${isLowPrivDoc ? '<p style="font-size: 11px; color: #64748b; margin-top: 8px;">💡 Keşif İpucu: Yetki seviyesi yüksek stratejik direktifler indekslerde (105+) yer alır.</p>' : ''}
         </div>`
       );
       return { status: 200, statusText: 'OK', headers: { 'Content-Type': 'text/html; charset=utf-8' }, html };
@@ -93,10 +101,21 @@ export async function handleVaultFlag(ctx: RouteContext): Promise<VirtualHttpRes
       <div class="badge-error">
         <h3 style="font-size: 16px; margin-bottom: 4px;">401 Yetkisiz Erişim — Yönetici JWT Belirteci Gerekli</h3>
         <p style="font-size: 12px; color: #cbd5e1;">Geçerli bir Bearer admin tokenı sağlanmadı.</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 6px;">
+          💡 <strong>Keşif İpucu:</strong> API <code>Authorization: Bearer &lt;jwt&gt;</code> başlığı bekliyor. İstemcide üretilen veya test edilen JWT başlığındaki <code>alg</code> algoritma anahtarını inceleyin.
+        </p>
       </div>
     </div>`
   );
-  return { status: 401, statusText: 'Unauthorized', headers: { 'Content-Type': 'text/html; charset=utf-8' }, html };
+  return {
+    status: 401,
+    statusText: 'Unauthorized',
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'WWW-Authenticate': 'Bearer realm="ACME Vault", alg="none,HS256,RS256"'
+    },
+    html
+  };
 }
 
 export async function handleVaultLookup(ctx: RouteContext): Promise<VirtualHttpResponse> {

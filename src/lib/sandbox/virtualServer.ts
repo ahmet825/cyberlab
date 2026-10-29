@@ -7,7 +7,9 @@ import {
   handleLogin,
   handleRobotsTxt,
   handleAdminSecretPortal,
-  handleDocuments
+  handleDocuments,
+  handleBackup,
+  handleConfig
 } from './handlers/portalHandler';
 import { handleSearch } from './handlers/searchHandler';
 import { handleInventory } from './handlers/inventoryHandler';
@@ -33,6 +35,8 @@ router.all('/login', handleLogin);
 router.all('/robots.txt', handleRobotsTxt);
 router.all('/admin_secret_portal', handleAdminSecretPortal);
 router.all('/documents', handleDocuments);
+router.all('/backup', handleBackup);
+router.all('/config', handleConfig);
 
 // 2. Challenge-01: Reflected XSS
 router.all('/search', handleSearch);

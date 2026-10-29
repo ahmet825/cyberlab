@@ -124,6 +124,17 @@ export async function handleLogin(ctx: RouteContext): Promise<VirtualHttpRespons
             <strong>SİSTEM BAYRAĞI:</strong> <code style="color: #00ff9d; font-size: 13px;">${dynamicFlag}</code>
           </div>
         </div>`;
+    } else if (username.includes("'") || password.includes("'")) {
+      authFeedback = `
+        <div class="badge-error">
+          <strong>Sözdizimi Uyarısı (SQL Warning):</strong> SQL ayrıştırma hatası oluştu.
+          <p style="font-size: 11px; color: #cbd5e1; margin-top: 4px;">
+            Sorgu: <code>SELECT * FROM users WHERE username = '${escapeHtml(username)}' AND password = '...'</code>
+          </p>
+          <p style="font-size: 11px; color: #94a3b8; margin-top: 4px;">
+            💡 <strong>Keşif İpucu:</strong> Tek tırnak karakteri SQL yapısını bozdu. Giriş sorgusunu her zaman doğru yapacak mantıksal bir bypass (örn: <code>' OR 1=1--</code>) kurgulamayı deneyin.
+          </p>
+        </div>`;
     } else if ((username === 'wiener' && password === 'peter') || (username === 'carlos' && password === 'carlosPassword99')) {
       authFeedback = `<div class="badge-success"><strong>Giriş Başarılı!</strong> Oturum açıldı: ${escapeHtml(username)}.</div>`;
       sessionValue = `usr_auth_${username}_active`;
@@ -243,11 +254,20 @@ Gizlilik: EN YÜKSEK (TOP SECRET)
 Kritik Güvenlik Bayrağı: ${dynamicFlag}
 Sunucu Anahtarı: k3y_s3rv3r_r00t_882914
 Oluşturulma Tarihi: 2026-03-15`;
+  } else if (file.includes('config') || file.includes('.env') || file.includes('web.config') || file.includes('apache')) {
+    fileContent = `[SİSTEM YAPILANDIRMASI // web.config]
+Server: Apache/2.4.52 (Linux 64-bit)
+DocumentRoot: /var/www/acme-portal/
+Database: sqlite:///var/data/inventory.db
+InternalGateway: 10.0.0.1 (Reverse Proxy)
+SecurityPolicy: Enforce HMAC & JWT Vault
+SecretsDirectory: /var/secrets/secret.txt (Protected)
+# Not: Canlı ortama aktarmadan önce gizli dosya yollarını temizleyin.`;
   } else {
     fileContent = `ACME Savunma Sanayii — Aylık Siber Güvenlik Değerlendirme Raporu
 Dosya: report.pdf
 Durum: Kamuya Açık Özet
-İerik: Tüm sunucu altyapısı ve ağ geçitleri normal seyrinde çalışmaktadır.`;
+İçerik: Tüm sunucu altyapısı ve ağ geçitleri normal seyrinde çalışmaktadır.`;
   }
 
   const html = ctx.createHtml(
@@ -278,6 +298,67 @@ Durum: Kamuya Açık Özet
     status: 200,
     statusText: 'OK',
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    html
+  };
+}
+
+export async function handleBackup(ctx: RouteContext): Promise<VirtualHttpResponse> {
+  const html = ctx.createHtml(
+    '403 Forbidden // ACME Backup Directory',
+    `<div class="container">
+      <div class="badge-error">
+        <h3 style="font-size: 16px; margin-bottom: 6px;">403 Forbidden — Dizin Listeleme Engellendi</h3>
+        <p style="font-size: 12px; color: #cbd5e1;">
+          <code>/backup/</code> dizinine doğrudan web erişimi engellendi.
+        </p>
+      </div>
+      <div style="background: #0f172a; padding: 14px; border-radius: 6px; border: 1px solid #334155; margin-top: 14px; font-size: 12px; color: #cbd5e1;">
+        <strong>💡 Keşif İpucu:</strong> <code>robots.txt</code> içinde listelenen dizinler siber güvenlikte bilgi ifşası (Information Disclosure) sayılır. Gerçek senaryolarda saldırganlar bu dizinlerdeki <code>.bak</code>, <code>.sql</code> gibi unutulmuş yedek dosyalarını ararlar.
+      </div>
+      <div style="margin-top: 14px;">
+        <a href="/" style="color: #38bdf8; font-size: 12px; text-decoration: none;">&larr; Ana Portala Dön</a>
+      </div>
+    </div>`
+  );
+
+  return {
+    status: 403,
+    statusText: 'Forbidden',
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'X-Robots-Tag': 'noindex, nofollow',
+      'X-Content-Type-Options': 'nosniff'
+    },
+    html
+  };
+}
+
+export async function handleConfig(ctx: RouteContext): Promise<VirtualHttpResponse> {
+  const html = ctx.createHtml(
+    '403 Forbidden // ACME Configuration Directory',
+    `<div class="container">
+      <div class="badge-error">
+        <h3 style="font-size: 16px; margin-bottom: 6px;">403 Forbidden — Yapılandırma Dizini</h3>
+        <p style="font-size: 12px; color: #cbd5e1;">
+          Web sunucu konfigürasyonu doğrudan HTTP üzerinden servis edilemez.
+        </p>
+      </div>
+      <div style="background: #0f172a; padding: 14px; border-radius: 6px; border: 1px solid #334155; margin-top: 14px; font-size: 12px; color: #cbd5e1;">
+        <strong>💡 Keşif İpucu:</strong> Doğrudan erişim kapalı olsa da, uygulamadaki dosya okuma parametreleri (örn: <code>/documents?file=web.config</code>) dolaylı bilgi sızıntılarına yol açabilir.
+      </div>
+      <div style="margin-top: 14px;">
+        <a href="/" style="color: #38bdf8; font-size: 12px; text-decoration: none;">&larr; Ana Portala Dön</a>
+      </div>
+    </div>`
+  );
+
+  return {
+    status: 403,
+    statusText: 'Forbidden',
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'X-Robots-Tag': 'noindex, nofollow'
+    },
     html
   };
 }

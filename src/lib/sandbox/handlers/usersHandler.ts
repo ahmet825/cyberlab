@@ -31,7 +31,10 @@ export async function handleUsers(ctx: RouteContext): Promise<VirtualHttpRespons
       statusText: 'Forbidden',
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'X-WAF-Block-Reason': 'HTTP_METHOD_RESTRICTED'
+        'Allow': 'OPTIONS, HEAD, POST',
+        'X-WAF-Block-Reason': 'HTTP_METHOD_RESTRICTED',
+        'X-Allowed-Methods': 'OPTIONS, HEAD, POST',
+        'X-Verb-Override-Supported': 'X-HTTP-Method-Override'
       },
       html
     };

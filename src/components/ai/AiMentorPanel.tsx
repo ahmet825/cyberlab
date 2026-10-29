@@ -1,20 +1,34 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Sparkles, RefreshCw } from 'lucide-react';
+import {
+  Bot,
+  Send,
+  Sparkles,
+  RefreshCw,
+  Lock,
+  ShieldCheck,
+  ShieldAlert,
+  LogIn
+} from 'lucide-react';
 import type { LabItem, ChatMessage } from '../../types/lab';
-import { askAiMentor } from '../../lib/ai/aiMentorEngine';
+import type { UserProfile } from '../../types/user';
+import { askAiMentor, ApiClientAuthError } from '../../lib/ai/aiMentorEngine';
 
 interface AiMentorPanelProps {
   currentLab: LabItem;
   deepInfraApiKey: string;
   deepInfraModel: string;
   geminiApiKey: string;
+  currentUser?: UserProfile | null;
+  onOpenAuthModal?: (reason?: string) => void;
 }
 
 export const AiMentorPanel: React.FC<AiMentorPanelProps> = ({
   currentLab,
   deepInfraApiKey,
   deepInfraModel,
-  geminiApiKey
+  geminiApiKey,
+  currentUser,
+  onOpenAuthModal
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -49,6 +63,12 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
   }, [messages, isTyping]);
 
   const handleSendMessage = async (textToSend?: string) => {
+    // Frontend Auth Protection Gate
+    if (!currentUser) {
+      onOpenAuthModal?.('Lütfen giriş yapın.');
+      return;
+    }
+
     const text = (textToSend || inputText).trim();
     if (!text || isTyping) return;
 
@@ -70,7 +90,8 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
         terminalLogs: [],
         deepInfraApiKey,
         deepInfraModel,
-        geminiApiKey
+        geminiApiKey,
+        currentUser
       });
 
       setMessages((prev) => [
@@ -83,15 +104,29 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
         }
       ]);
     } catch (err: any) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `ai-err-${Date.now()}`,
-          sender: 'ai',
-          text: `Bir hata oluştu: ${err.message}`,
-          timestamp: new Date().toLocaleTimeString()
-        }
-      ]);
+      if (err instanceof ApiClientAuthError || err?.name === 'ApiClientAuthError' || err?.code === 'AUTH_REQUIRED') {
+        const authReason = 'Lütfen giriş yapın.';
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `ai-auth-${Date.now()}`,
+            sender: 'ai',
+            text: `🔒 **[LÜTFEN GİRİŞ YAPIN]**\n\n${err.message || 'Lütfen giriş yapın.'}\n\nAI Mentor servisinden yararlanabilmek için lütfen giriş yapın veya ücretsiz hesap oluşturun.`,
+            timestamp: new Date().toLocaleTimeString()
+          }
+        ]);
+        onOpenAuthModal?.(authReason);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `ai-err-${Date.now()}`,
+            sender: 'ai',
+            text: `Bir hata oluştu: ${err.message}`,
+            timestamp: new Date().toLocaleTimeString()
+          }
+        ]);
+      }
     } finally {
       setIsTyping(false);
     }
@@ -114,7 +149,8 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
         display: 'flex',
         flexDirection: 'column',
         background: 'var(--bg-dark)',
-        borderLeft: '1px solid var(--border-subtle)'
+        borderLeft: '1px solid var(--border-subtle)',
+        position: 'relative'
       }}
     >
       {/* Mentor Header */}
@@ -160,35 +196,78 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
                 {hasDeepInfra ? `DeepInfra // ${shortModelName}` : 'Sokratik Motor'}
               </span>
             </div>
-            <span style={{ fontSize: '10px', color: 'var(--accent-green)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span className="live-dot" style={{ width: '6px', height: '6px' }} />
-              Sokratik Metodoloji Aktif
+            <span
+              style={{
+                fontSize: '10px',
+                color: currentUser ? 'var(--accent-green)' : 'var(--accent-orange)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              {currentUser ? (
+                <>
+                  <ShieldCheck size={11} />
+                  <span>API Client Doğrulandı ({currentUser.username})</span>
+                </>
+              ) : (
+                <>
+                  <Lock size={10} />
+                  <span>API Client: Lütfen giriş yapın</span>
+                </>
+              )}
             </span>
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            setMessages([
-              {
-                id: 'reset',
-                sender: 'ai',
-                text: `Sohbet sıfırlandı. Aktif Lab: **${currentLab.title}**. Sorunu sorabilirsin!`,
-                timestamp: new Date().toLocaleTimeString()
-              }
-            ]);
-          }}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--text-dim)',
-            cursor: 'pointer',
-            padding: '4px'
-          }}
-          title="Sohbeti Sıfırla"
-        >
-          <RefreshCw size={13} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {!currentUser && (
+            <button
+              onClick={() => onOpenAuthModal?.('Lütfen giriş yapın.')}
+              style={{
+                background: 'rgba(0, 255, 157, 0.12)',
+                border: '1px solid var(--accent-green)',
+                color: 'var(--accent-green)',
+                borderRadius: '4px',
+                padding: '3px 8px',
+                fontSize: '10.5px',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title="Giriş Yap"
+            >
+              <LogIn size={11} />
+              <span>Giriş Yap</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => {
+              setMessages([
+                {
+                  id: 'reset',
+                  sender: 'ai',
+                  text: `Sohbet sıfırlandı. Aktif Lab: **${currentLab.title}**. Sorunu sorabilirsin!`,
+                  timestamp: new Date().toLocaleTimeString()
+                }
+              ]);
+            }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-dim)',
+              cursor: 'pointer',
+              padding: '4px'
+            }}
+            title="Sohbeti Sıfırla"
+          >
+            <RefreshCw size={13} />
+          </button>
+        </div>
       </div>
 
       {/* Quick Prompts Chips Bar */}
@@ -205,12 +284,18 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
         {quickPrompts.map((p, idx) => (
           <button
             key={idx}
-            onClick={() => handleSendMessage(p.query)}
+            onClick={() => {
+              if (!currentUser) {
+                onOpenAuthModal?.('Lütfen giriş yapın.');
+                return;
+              }
+              handleSendMessage(p.query);
+            }}
             style={{
               whiteSpace: 'nowrap',
               background: 'var(--bg-card)',
               border: '1px solid var(--border-subtle)',
-              color: 'var(--text-muted)',
+              color: currentUser ? 'var(--text-muted)' : '#64748b',
               padding: '4px 8px',
               borderRadius: '4px',
               fontSize: '11px',
@@ -218,72 +303,204 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
               fontFamily: 'var(--font-ui)',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
+              gap: '4px',
+              opacity: currentUser ? 1 : 0.85
             }}
+            title={!currentUser ? 'Kullanmak için lütfen giriş yapın' : p.label}
           >
-            {p.label}
+            {!currentUser && <Lock size={10} color="var(--accent-orange)" />}
+            <span>{p.label}</span>
           </button>
         ))}
       </div>
 
-      {/* Messages Scroll Area */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '14px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px'
-        }}
-      >
-        {messages.map((m) => {
-          const isAi = m.sender === 'ai';
-          return (
-            <div
-              key={m.id}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: isAi ? 'flex-start' : 'flex-end',
-                maxWidth: '92%',
-                alignSelf: isAi ? 'flex-start' : 'flex-end'
-              }}
-            >
+      {/* Frontend Auth Guard / Messages Scroll Area */}
+      {!currentUser ? (
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px 20px',
+            textAlign: 'center',
+            background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.08) 0%, rgba(5, 8, 15, 0.95) 75%)',
+            overflowY: 'auto'
+          }}
+        >
+          {/* Glowing Lock Badge */}
+          <div
+            style={{
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(0, 240, 255, 0.2))',
+              border: '1px solid rgba(139, 92, 246, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 25px rgba(139, 92, 246, 0.35)',
+              marginBottom: '14px'
+            }}
+          >
+            <Lock size={26} color="#a78bfa" />
+          </div>
+
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(245, 158, 11, 0.12)',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              fontSize: '10.5px',
+              fontFamily: 'var(--font-mono)',
+              color: '#fde68a',
+              marginBottom: '10px'
+            }}
+          >
+            <ShieldAlert size={12} color="#f59e0b" />
+            <span>KİMLİK DOĞRULAMA KORUMASI</span>
+          </div>
+
+          <h3
+            style={{
+              fontSize: '17px',
+              fontWeight: 800,
+              color: '#fff',
+              fontFamily: 'var(--font-display)',
+              marginBottom: '8px',
+              letterSpacing: '0.5px'
+            }}
+          >
+            Lütfen Giriş Yapın
+          </h3>
+
+          <p
+            style={{
+              fontSize: '12px',
+              color: '#94a3b8',
+              lineHeight: 1.6,
+              maxWidth: '320px',
+              marginBottom: '18px'
+            }}
+          >
+            CyberAI Mentor ile laboratuvarlarda yapay zeka rehberliği almak, zafiyet ipuçlarını ve Sokratik analizleri görüntülemek için lütfen giriş yapın.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => onOpenAuthModal?.('Lütfen giriş yapın.')}
+            className="btn-cyber-primary"
+            style={{
+              padding: '9px 20px',
+              fontSize: '12px',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              boxShadow: '0 0 15px rgba(0, 255, 157, 0.3)'
+            }}
+          >
+            <Lock size={13} />
+            <span>Giriş Yap / Kayıt Ol</span>
+          </button>
+
+          {/* Feature Highlights */}
+          <div
+            style={{
+              marginTop: '22px',
+              width: '100%',
+              maxWidth: '320px',
+              borderTop: '1px solid var(--border-subtle)',
+              paddingTop: '14px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              textAlign: 'left'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#cbd5e1' }}>
+              <Sparkles size={12} color="var(--accent-purple)" style={{ flexShrink: 0 }} />
+              <span>Sokratik yöntemle zafiyet analiz ve ipuçları</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#cbd5e1' }}>
+              <Bot size={12} color="var(--accent-cyan)" style={{ flexShrink: 0 }} />
+              <span>Llama 3.3 70B & Qwen 2.5 Coder MoE entegrasyonu</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#cbd5e1' }}>
+              <ShieldCheck size={12} color="var(--accent-green)" style={{ flexShrink: 0 }} />
+              <span>Bulut senkronizasyonu ve korumalı API client</span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '14px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}
+        >
+          {messages.map((m) => {
+            const isAi = m.sender === 'ai';
+            return (
               <div
+                key={m.id}
                 style={{
-                  background: isAi ? 'var(--bg-card)' : 'rgba(0, 240, 255, 0.12)',
-                  border: isAi ? '1px solid var(--border-subtle)' : '1px solid var(--border-cyan)',
-                  borderRadius: '8px',
-                  padding: '10px 14px',
-                  color: isAi ? '#e2e8f0' : '#fff',
-                  fontSize: '12.5px',
-                  lineHeight: 1.6,
-                  whiteSpace: 'pre-wrap'
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: isAi ? 'flex-start' : 'flex-end',
+                  maxWidth: '92%',
+                  alignSelf: isAi ? 'flex-start' : 'flex-end'
                 }}
               >
-                {m.text}
+                <div
+                  style={{
+                    background: isAi ? 'var(--bg-card)' : 'rgba(0, 240, 255, 0.12)',
+                    border: isAi ? '1px solid var(--border-subtle)' : '1px solid var(--border-cyan)',
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    color: isAi ? '#e2e8f0' : '#fff',
+                    fontSize: '12.5px',
+                    lineHeight: 1.6,
+                    whiteSpace: 'pre-wrap'
+                  }}
+                >
+                  {m.text}
+                </div>
+                <span style={{ fontSize: '9px', color: 'var(--text-dim)', marginTop: '4px' }}>
+                  {m.timestamp}
+                </span>
               </div>
-              <span style={{ fontSize: '9px', color: 'var(--text-dim)', marginTop: '4px' }}>
-                {m.timestamp}
-              </span>
+            );
+          })}
+
+          {isTyping && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', padding: '6px' }}>
+              <Sparkles size={12} color="var(--accent-purple)" className="animate-spin" />
+              <span>AI Mentor düşünüyor...</span>
             </div>
-          );
-        })}
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      )}
 
-        {isTyping && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', padding: '6px' }}>
-            <Sparkles size={12} color="var(--accent-purple)" className="animate-spin" />
-            <span>AI Mentor düşünüyor...</span>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Form */}
+      {/* Input Form with Auth Gate */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          if (!currentUser) {
+            onOpenAuthModal?.('Lütfen giriş yapın.');
+            return;
+          }
           handleSendMessage();
         }}
         style={{
@@ -292,14 +509,16 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
           borderTop: '1px solid var(--border-subtle)',
           display: 'flex',
           gap: '8px',
-          alignItems: 'center'
+          alignItems: 'center',
+          opacity: !currentUser ? 0.75 : 1
         }}
       >
         <input
           type="text"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder="Yapay Zeka Mentoruna sor (Socratic mod)..."
+          value={currentUser ? inputText : ''}
+          onChange={(e) => currentUser && setInputText(e.target.value)}
+          placeholder={currentUser ? 'Yapay Zeka Mentoruna sor (Socratic mod)...' : 'Lütfen giriş yapın (AI Mentor kilitli)...'}
+          disabled={!currentUser || isTyping}
           style={{
             flex: 1,
             background: 'var(--bg-input)',
@@ -307,16 +526,24 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
             color: '#fff',
             padding: '8px 12px',
             borderRadius: '6px',
-            fontSize: '12px'
+            fontSize: '12px',
+            cursor: !currentUser ? 'not-allowed' : 'text'
           }}
         />
         <button
           type="submit"
           className="btn-cyber-primary"
-          style={{ padding: '8px 12px' }}
+          style={{
+            padding: '8px 12px',
+            background: !currentUser ? 'rgba(245, 158, 11, 0.2)' : undefined,
+            borderColor: !currentUser ? 'var(--border-orange)' : undefined,
+            color: !currentUser ? 'var(--accent-orange)' : undefined,
+            cursor: 'pointer'
+          }}
           disabled={isTyping}
+          title={!currentUser ? 'Lütfen giriş yapın' : 'Mesaj Gönder'}
         >
-          <Send size={13} />
+          {!currentUser ? <Lock size={13} /> : <Send size={13} />}
         </button>
       </form>
     </div>

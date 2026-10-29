@@ -71,6 +71,7 @@ export async function handleBlogPost(ctx: RouteContext): Promise<VirtualHttpResp
       <div style="background: #0f172a; padding: 16px; border-radius: 6px; border: 1px solid #334155; margin-bottom: 20px;">
         <h4 style="font-size: 14px; color: #00ff9d; margin-bottom: 6px;">Teknik Özet #01</h4>
         <p style="font-size: 12px; color: #cbd5e1;">Markdown ayrıştırıcısı kullanıcı yorumlarını dinamik olarak HTML etiketlerine dönüştürmektedir.</p>
+        <p style="font-size: 11px; color: #64748b; margin-top: 6px;">💡 Keşif İpucu: Markdown ayrıştırıcıları genellikle bağlantı sözdizimini (<code>[metin](url)</code>) doğrudan <code>&lt;a href="..."&gt;</code> etiketine dönüştürür. Protokol kısıtlamalarını (örn: <code>javascript:</code>) inceleyin.</p>
       </div>
 
       <h3 style="font-size: 15px; margin-bottom: 10px;">Yorumlar (${storedComments.length}):</h3>

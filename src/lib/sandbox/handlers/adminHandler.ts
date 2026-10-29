@@ -35,7 +35,11 @@ export async function handleAdmin(ctx: RouteContext): Promise<VirtualHttpRespons
       statusText: 'Forbidden',
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'Set-Cookie': 'user_role=guest; Path=/'
+        'Set-Cookie': 'user_role=guest; Path=/',
+        'X-Backend-Role': userRole || 'guest',
+        'X-Auth-Required': 'admin',
+        'X-WAF-Fingerprint': 'ModSecurity-Core-2026',
+        'X-Forwarded-For-Trusted': '10.0.0.1'
       },
       setCookies: {
         user_role: userRole || 'guest'

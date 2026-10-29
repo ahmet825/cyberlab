@@ -28,7 +28,8 @@ import {
   Bot,
   RotateCcw,
   Settings as SettingsIcon,
-  Shield
+  Shield,
+  Lock
 } from 'lucide-react';
 import { resetDatabase } from './lib/sql/sqliteEngine';
 import { resetBlogComments } from './lib/sandbox/handlers/blogHandler';
@@ -663,7 +664,34 @@ export const App: React.FC = () => {
             <span>Tebrikler! Güvenlik bulmacasını başarıyla çözdünüz.</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {!currentUser && (
+              <button
+                type="button"
+                onClick={() =>
+                  setAuthModal({
+                    isOpen: true,
+                    reasonMessage: 'Tebrikler! Çözdüğünüz challenge ilerlemesini kalıcı olarak kaydetmek için ücretsiz hesap açın.'
+                  })
+                }
+                style={{
+                  background: 'rgba(0, 240, 255, 0.15)',
+                  border: '1px solid var(--accent-cyan)',
+                  color: 'var(--accent-cyan)',
+                  padding: '4px 10px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+              >
+                <span>☁️ İlerlemeyi Kaydet</span>
+              </button>
+            )}
             <span style={{ fontSize: '11px', color: '#86efac', fontFamily: 'var(--font-mono)' }}>
               Zafiyet: {currentLab.category} ({currentLab.difficulty === 'Apprentice' ? 'Başlangıç' : currentLab.difficulty === 'Practitioner' ? 'Orta Seviye' : 'İleri Seviye'})
             </span>
@@ -900,6 +928,66 @@ export const App: React.FC = () => {
               </button>
             </div>
 
+            {/* Auth / Profile CTA */}
+            {!currentUser ? (
+              <button
+                onClick={() =>
+                  setAuthModal({
+                    isOpen: true,
+                    reasonMessage: 'İlerlemenizi buluta senkronize etmek, AI Mentoru çalıştırmak ve tüm laboratuvarları açmak için ücretsiz kayıt olun.'
+                  })
+                }
+                style={{
+                  background: 'linear-gradient(135deg, rgba(0, 255, 157, 0.2), rgba(0, 240, 255, 0.15))',
+                  border: '1px solid var(--accent-green)',
+                  color: 'var(--accent-green)',
+                  padding: '4px 10px',
+                  borderRadius: '5px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  boxShadow: '0 0 10px rgba(0, 255, 157, 0.15)'
+                }}
+                title="İlerlemeyi Buluta Kaydet & Ücretsiz Hesap Oluştur"
+              >
+                <span>🔐 İlerlemeyi Kaydet</span>
+              </button>
+            ) : (
+              <div
+                style={{
+                  background: 'rgba(15, 23, 42, 0.7)',
+                  border: '1px solid var(--border-accent)',
+                  padding: '3px 8px',
+                  borderRadius: '5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span style={{ fontSize: '11px', color: 'var(--accent-green)', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
+                  👤 {currentUser.username}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--text-dim)',
+                    fontSize: '10px',
+                    cursor: 'pointer',
+                    padding: '1px 3px'
+                  }}
+                  title="Oturumu Kapat"
+                >
+                  (Çıkış)
+                </button>
+              </div>
+            )}
+
             {/* Reset Lab State */}
             <button
               onClick={handleResetLab}
@@ -1087,7 +1175,15 @@ export const App: React.FC = () => {
                 <div style={{ display: 'flex', gap: '4px' }}>
                   <button
                     id="tour-ai-tab"
-                    onClick={() => setActiveRightTab('ai')}
+                    onClick={() => {
+                      if (!currentUser) {
+                        setAuthModal({
+                          isOpen: true,
+                          reasonMessage: 'Lütfen giriş yapın.'
+                        });
+                      }
+                      setActiveRightTab('ai');
+                    }}
                     style={{
                       background: activeRightTab === 'ai' ? 'var(--bg-dark)' : 'transparent',
                       color: activeRightTab === 'ai' ? 'var(--accent-purple)' : 'var(--text-dim)',
@@ -1105,6 +1201,26 @@ export const App: React.FC = () => {
                   >
                     <Bot size={13} />
                     <span>AI Mentor</span>
+                    {!currentUser && (
+                      <span
+                        style={{
+                          fontSize: '9px',
+                          background: 'rgba(245, 158, 11, 0.18)',
+                          color: 'var(--accent-orange)',
+                          border: '1px solid rgba(245, 158, 11, 0.4)',
+                          borderRadius: '3px',
+                          padding: '1px 4px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          fontWeight: 700
+                        }}
+                        title="Korumalı - Lütfen giriş yapın"
+                      >
+                        <Lock size={8} />
+                        <span>Kilitli</span>
+                      </span>
+                    )}
                   </button>
 
                   <button
@@ -1155,6 +1271,10 @@ export const App: React.FC = () => {
                     deepInfraApiKey={deepInfraApiKey}
                     deepInfraModel={deepInfraModel}
                     geminiApiKey={geminiApiKey}
+                    currentUser={currentUser}
+                    onOpenAuthModal={(reason) =>
+                      setAuthModal({ isOpen: true, reasonMessage: reason || 'Lütfen giriş yapın.' })
+                    }
                   />
                 ) : (
                   <WebTerminal

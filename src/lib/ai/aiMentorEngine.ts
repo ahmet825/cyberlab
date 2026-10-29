@@ -1,4 +1,12 @@
 import type { LabItem } from '../../types/lab';
+import type { UserProfile } from '../../types/user';
+import {
+  resolveAuthenticatedAiRequest,
+  ApiClientAuthError,
+  DEFAULT_DEEPINFRA_MODEL
+} from '../api/apiClient';
+
+export { ApiClientAuthError, DEFAULT_DEEPINFRA_MODEL };
 
 export interface AiRequestOptions {
   lab: LabItem;
@@ -7,9 +15,8 @@ export interface AiRequestOptions {
   deepInfraApiKey?: string;
   deepInfraModel?: string;
   geminiApiKey?: string;
+  currentUser?: UserProfile | null;
 }
-
-export const DEFAULT_DEEPINFRA_MODEL = 'meta-llama/Llama-3.3-70B-Instruct-Turbo';
 
 export const DEEPINFRA_AVAILABLE_MODELS = [
   { id: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', label: 'Meta Llama 3.3 70B Turbo (Önerilen // Hızlı & Güçlü)' },
@@ -18,151 +25,14 @@ export const DEEPINFRA_AVAILABLE_MODELS = [
   { id: 'meta-llama/Meta-Llama-3.1-8B-Instruct', label: 'Meta Llama 3.1 8B (Ultra Hızlı)' }
 ];
 
+/**
+ * Resolves AI Mentor requests exclusively through the authenticated API Client
+ * (`resolveAuthenticatedAiRequest`). Throws `ApiClientAuthError` if the user
+ * does not have a verified operator session.
+ */
 export async function askAiMentor(options: AiRequestOptions): Promise<string> {
-  const { lab, userMessage, terminalLogs, deepInfraApiKey, deepInfraModel, geminiApiKey } = options;
-
-  // 1. Check DeepInfra API Key (Environment or User Stored)
-  const effectiveDeepInfraKey = (
-    deepInfraApiKey ||
-    (typeof window !== 'undefined' ? localStorage.getItem('hackerarena_deepinfra_key') : '') ||
-    import.meta.env.VITE_DEEPINFRA_API_KEY ||
-    ''
-  ).trim();
-
-  const effectiveModel = (
-    deepInfraModel ||
-    (typeof window !== 'undefined' ? localStorage.getItem('hackerarena_deepinfra_model') : '') ||
-    import.meta.env.VITE_DEEPINFRA_MODEL ||
-    DEFAULT_DEEPINFRA_MODEL
-  ).trim();
-
-  if (effectiveDeepInfraKey && effectiveDeepInfraKey.length > 5) {
-    try {
-      const response = await callDeepInfraApi(effectiveDeepInfraKey, effectiveModel, lab, userMessage, terminalLogs);
-      if (response) return response;
-    } catch (err: any) {
-      console.warn('[AI Mentor] DeepInfra API çağrısı başarısız, alternatif motora geçiliyor:', err);
-    }
-  }
-
-  // 2. Check Google Gemini API Key (Fallback)
-  const effectiveGeminiKey = (
-    geminiApiKey ||
-    (typeof window !== 'undefined' ? localStorage.getItem('hackerarena_gemini_key') : '') ||
-    import.meta.env.VITE_GEMINI_API_KEY ||
-    ''
-  ).trim();
-
-  if (effectiveGeminiKey && effectiveGeminiKey.length > 10) {
-    try {
-      const response = await callGeminiApi(effectiveGeminiKey, lab, userMessage, terminalLogs);
-      if (response) return response;
-    } catch (err: any) {
-      console.warn('[AI Mentor] Gemini API çağrısı başarısız, yerleşik motora geçiliyor:', err);
-    }
-  }
-
-  // 3. Built-in Offline Socratic Security Engine (Zero-Cost Instant Fallback)
-  return generateLocalSocraticResponse(lab, userMessage, terminalLogs);
-}
-
-/**
- * Call DeepInfra OpenAI-compatible Chat Completions API
- */
-async function callDeepInfraApi(
-  apiKey: string,
-  model: string,
-  lab: LabItem,
-  userMessage: string,
-  _terminalLogs: string[]
-): Promise<string> {
-  const systemInstruction = `Sen "SiberAdam" platformunda görev yapan, kıdemli bir siber güvenlik operasyon lideri ve yapay zeka mentorusun (CyberAI Operator).
-Görevin: Siber güvenlik öğrencisine doğrudan kopyala-yapıştır çözüm ve flag vermek YERİNE, Sokratik yöntemle yol göstermek, DevTools ve Terminal kullanım reflekslerini geliştirmektir.
-
-[AKTİF GÖREV BİLGİLERİ]
-- Laboratuvar: "${lab.title}"
-- Kategori: ${lab.category} | Seviye: ${lab.difficulty}
-- Hedef: ${lab.objective}
-- Açıklama: ${lab.description}
-- İpuçları: ${lab.hints.map((h) => h.content).join(' || ')}
-- Zafiyet Çözüm Mantığı: ${lab.solutionExplanation}
-
-[KURALLAR & MENTORLUK TARZI]
-1. Türkçe dilinde, motive edici, siber istihbarat ve etik hacker jargonuna uygun konuş.
-2. Doğrudan çalışan payload'ı tek seferde verme; öğrenciye HTTP parametrelerini nerede test etmesi gerektiğini, hata kodlarını nasıl okuyacağını veya hangi filtreleme mekanizmasının devrede olduğunu sorgulat.
-3. Yanıtında Markdown başlıkları, listeler ve kod blokları kullan. Gerekirse curl/terminal komutu denemeleri öner.`;
-
-  const payload = {
-    model: model || DEFAULT_DEEPINFRA_MODEL,
-    messages: [
-      { role: 'system', content: systemInstruction },
-      { role: 'user', content: userMessage }
-    ],
-    temperature: 0.6,
-    max_tokens: 1000
-  };
-
-  const response = await fetch('https://api.deepinfra.com/v1/openai/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`DeepInfra HTTP ${response.status}: ${errorText}`);
-  }
-
-  const json = await response.json();
-  const reply = json.choices?.[0]?.message?.content;
-  return reply || 'DeepInfra modelinden yanıt alınamadı.';
-}
-
-/**
- * Call Gemini API (Fallback)
- */
-async function callGeminiApi(
-  apiKey: string,
-  lab: LabItem,
-  userMessage: string,
-  _terminalLogs: string[]
-): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-  const systemInstruction = `Sen SiberAdam platformunun yapay zeka mentorusun.
-Laboratuvar: "${lab.title}" (${lab.category}, ${lab.difficulty}).
-Hedef: ${lab.objective}
-Öğrenciye doğrudan cevabı kopyala-yapıştır vermek yerine Sokratik yöntemle keşif adımlarını öğret.`;
-
-  const payload = {
-    contents: [
-      {
-        role: 'user',
-        parts: [{ text: `${systemInstruction}\n\nÖğrencinin Sorusu: ${userMessage}` }]
-      }
-    ],
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 800
-    }
-  };
-
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  if (!res.ok) {
-    throw new Error(`Gemini API error: ${res.statusText}`);
-  }
-
-  const data = await res.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  return text || 'Yanıt alınamadı.';
+  const result = await resolveAuthenticatedAiRequest(options, generateLocalSocraticResponse);
+  return result.reply;
 }
 
 /**

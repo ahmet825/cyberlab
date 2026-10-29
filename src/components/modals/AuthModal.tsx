@@ -25,6 +25,7 @@ interface AuthModalProps {
   onClose: () => void;
   onLoginSuccess: (user: UserProfile) => void;
   reasonMessage?: string;
+  defaultMode?: 'signin' | 'signup';
 }
 
 type AuthViewMode = 'signin' | 'signup' | 'forgot_password';
@@ -33,9 +34,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
   onLoginSuccess,
-  reasonMessage
+  reasonMessage,
+  defaultMode
 }) => {
-  const [mode, setMode] = useState<AuthViewMode>('signin');
+  const [mode, setMode] = useState<AuthViewMode>(() => (reasonMessage || defaultMode === 'signup' ? 'signup' : 'signin'));
+
+  // Sync mode whenever modal opens with a reason (e.g. saving progress, unlocking labs or activating AI)
+  React.useEffect(() => {
+    if (isOpen) {
+      if (defaultMode) {
+        setMode(defaultMode);
+      } else if (reasonMessage) {
+        setMode('signup');
+      }
+    }
+  }, [isOpen, reasonMessage, defaultMode]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');

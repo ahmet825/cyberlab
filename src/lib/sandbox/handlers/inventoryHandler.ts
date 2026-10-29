@@ -12,8 +12,13 @@ export async function handleInventory(ctx: RouteContext): Promise<VirtualHttpRes
   const sqlQuery = `SELECT id, name, price, category FROM products WHERE category = '${category}'`;
   const res = await executeVulnerableQuery(sqlQuery);
 
+  let discoveryHint = '';
   if (res.error) {
     errorMessage = `SQL SYNTAX EXCEPTION: ${res.error}`;
+    discoveryHint = `
+      <div style="font-size: 11px; color: #94a3b8; margin-top: 8px; border-top: 1px dashed rgba(239, 68, 68, 0.4); padding-top: 6px;">
+        💡 <strong>Keşif İpucu:</strong> Veritabanı motoru SQLite. Kolon sayısını keşfetmek için <code>' ORDER BY 1--</code> (hata alana kadar sayıyı artırın) veya sürüm sorgulamak için <code>' UNION SELECT 1, sqlite_version(), 3, 4--</code> deneyebilirsiniz.
+      </div>`;
   } else {
     rows = res.values;
   }
@@ -66,7 +71,7 @@ export async function handleInventory(ctx: RouteContext): Promise<VirtualHttpRes
       </form>
 
       ${blindFlagAlert || ''}
-      ${errorMessage ? `<div class="badge-error" style="margin-top: 16px;">${errorMessage}</div>` : ''}
+      ${errorMessage ? `<div class="badge-error" style="margin-top: 16px;">${errorMessage}${discoveryHint}</div>` : ''}
 
       <table style="margin-top: 16px;">
         <thead>
@@ -87,7 +92,10 @@ export async function handleInventory(ctx: RouteContext): Promise<VirtualHttpRes
   return {
     status: 200,
     statusText: 'OK',
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'X-Database-Engine': 'SQLite 3.x WASM'
+    },
     html
   };
 }

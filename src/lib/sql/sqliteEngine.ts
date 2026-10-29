@@ -86,6 +86,22 @@ export async function resetDatabase(): Promise<Database | null> {
     `);
 
     db.run(`
+      CREATE TABLE audit_telemetry (
+        event_id INTEGER PRIMARY KEY,
+        facility TEXT NOT NULL,
+        severity TEXT NOT NULL,
+        note TEXT NOT NULL
+      );
+    `);
+
+    db.run(`
+      INSERT INTO audit_telemetry (event_id, facility, severity, note) VALUES
+      (1, 'WAF_MODSEC', 'INFO', 'SQLite fingerprint: sqlite_version() fonksiyonu aktiftir.'),
+      (2, 'AUTH_GATE', 'WARN', 'sqlite_master tablosu doğrudan okunabilir durumdadır.'),
+      (3, 'VAULT_STORE', 'NOTICE', 'PRAGMA table_info(products) seması 4 sütun bildiriyor.');
+    `);
+
+    db.run(`
       INSERT INTO system_secrets (key_id, secret_name, secret_value, classification) VALUES
       (1, 'root_vault_flag', '__VAULT_TOKEN_BLIND__', 'TOP_SECRET_ORCON'),
       (2, 'db_encryption_master_key', '0x99F4A8C1102DE', 'RESTRICTED'),
@@ -231,8 +247,41 @@ function executeInMemorySql(rawQuery: string): SqlQueryResult {
 
   // 2. UNION SELECT Attack
   if (qLower.includes('union') && qLower.includes('select')) {
-    // Check if selecting from corp_accounts
     const rows = [...SEED_PRODUCTS.slice(0, 2)];
+
+    // Recon / Schema Discovery queries (instructive, does not hand out the flag)
+    if (qLower.includes('sqlite_version()') || qLower.includes('sqlite_version')) {
+      return {
+        columns: productCols,
+        values: [...rows, [1, 'SQLite Engine Ver: 3.42.0 (WASM/x86_64)', '0.00', 'Database Fingerprint']],
+        rawQuery
+      };
+    }
+    if (qLower.includes('sqlite_master')) {
+      return {
+        columns: productCols,
+        values: [
+          ...rows,
+          [1, 'Table: corp_accounts', '0.00', 'Schema Discovery'],
+          [2, 'Table: system_secrets', '0.00', 'Schema Discovery'],
+          [3, 'Table: audit_telemetry', '0.00', 'Schema Discovery']
+        ],
+        rawQuery
+      };
+    }
+    if (qLower.includes('audit_telemetry')) {
+      return {
+        columns: productCols,
+        values: [
+          ...rows,
+          [1, 'WAF_MODSEC: sqlite_version() aktif', 'INFO', 'Telemetry'],
+          [2, 'VAULT_STORE: PRAGMA table_info(products) 4 kolon', 'NOTICE', 'Telemetry']
+        ],
+        rawQuery
+      };
+    }
+
+    // Check if selecting from corp_accounts (Winning Exploit Path)
     if (qLower.includes('corp_accounts') || qLower.includes('acc_')) {
       const dynamicUnionFlag =
         synthesizeExploitFlag('lab-sqli-union-schema', 'sqli_union_corp_accounts') || '__LOCKED__';

@@ -21,6 +21,13 @@ export async function handleSearch(ctx: RouteContext): Promise<VirtualHttpRespon
           Sorgu doğrudan DOM çıktısına yansıtıldı.
         </p>
         ${
+          !dynamicFlag
+            ? `<div style="font-size: 11px; color: #94a3b8; margin-top: 8px; border-top: 1px dashed rgba(0, 255, 157, 0.25); padding-top: 6px;">
+                💡 <strong>Keşif İpucu:</strong> Girdiniz HTML çıktısında doğrudan yankılanıyor (Reflection). Özel karakterlerin (<code>&lt; &gt; " '</code>) filtrelenip filtrelenmediğini ve DOM contextini test edin.
+              </div>`
+            : ''
+        }
+        ${
           dynamicFlag
             ? `<div style="margin-top: 10px; padding: 8px 10px; background: rgba(0, 255, 157, 0.12); border: 1px solid rgba(0, 255, 157, 0.35); border-radius: 4px;">
                 <strong>[REFLECTED XSS DOĞRULANDI] Sistem Bayrağı:</strong> <code style="color: #00ff9d;">${dynamicFlag}</code>
@@ -32,7 +39,8 @@ export async function handleSearch(ctx: RouteContext): Promise<VirtualHttpRespon
 
   const html = ctx.createHtml(
     'Arama // ACME Savunma Portalı',
-    `<div class="container">
+    `<!-- SEC-AUDIT: Reflected parameter 'q'. CSP policy: unsafe-inline enabled for compatibility -->
+    <div class="container">
       <h2 style="font-size: 20px; margin-bottom: 8px;">ACME İç Arama Servisi</h2>
       <p style="color: #94a3b8; font-size: 12px; margin-bottom: 18px;">
         Kurumsal doküman ve parça arama motoru. Girdi doğrudan sayfaya basılmaktadır.
@@ -49,7 +57,10 @@ export async function handleSearch(ctx: RouteContext): Promise<VirtualHttpRespon
     </div>`
   );
 
-  const responseHeaders: Record<string, string> = { 'Content-Type': 'text/html; charset=utf-8' };
+  const responseHeaders: Record<string, string> = {
+    'Content-Type': 'text/html; charset=utf-8',
+    'X-XSS-Protection': '0'
+  };
 
   return {
     status: 200,
