@@ -263,7 +263,7 @@ export const App: React.FC = () => {
   // Dynamic SEO Page Title Synchronizer
   useEffect(() => {
     if (currentView === 'landing') {
-      document.title = 'SiberAdam // Uygulamalı Siber Güvenlik Eğitimi & Web Security Academy (CTF)';
+      document.title = 'SiberAdam // Uygulamalı Siber Güvenlik Eğitimi & İnteraktif CTF Laboratuvarı';
     } else if (currentView === 'linux-machine') {
       document.title = 'SiberAdam // Linux Sistemleri & CTF Öğrenme Makinesi';
     } else if (currentView === 'disclaimer') {
@@ -338,7 +338,7 @@ export const App: React.FC = () => {
   };
 
 
-  // Lab solved trigger (PortSwigger banner + confetti)
+  // Lab solved trigger (Achievement banner + confetti)
   const handleLabSolved = (labId: string, verifiedFlag?: string) => {
     if (!solvedLabIds.has(labId)) {
       setSolvedLabIds((prev) => new Set([...prev, labId]));

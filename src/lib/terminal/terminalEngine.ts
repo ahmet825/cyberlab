@@ -32,7 +32,7 @@ export async function processTerminalCommand(
     case 'help':
       return {
         type: 'system',
-        output: `\x1b[36m=== CYBERPULSE WEB SECURITY TERMINAL v2.4 ===\x1b[0m
+        output: `\x1b[36m=== SİBERADAM WEB SECURITY TERMINAL v2.4 ===\x1b[0m
 Available Offensive & Defensive Security Commands:
 
   \x1b[32mcurl\x1b[0m [options] <url>    Send HTTP requests (-i, -X POST, -H "Header: Val", -d "data")

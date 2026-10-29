@@ -21,7 +21,7 @@ export const WebTerminal: React.FC<WebTerminalProps> = ({
   const [history, setHistory] = useState<TerminalHistoryItem[]>([
     {
       command: 'system-init',
-      output: `\x1b[36m[*] CyberTerminal v2.4 initialized. Ready for offensive & defensive tasks.\x1b[0m\n[*] Type \x1b[32m'help'\x1b[0m for available security tools (curl, sqli, decode, fuzz, etc.).`,
+      output: `\x1b[36m[*] SiberAdam Web Terminal v2.4 hazır. Ofansif ve defansif siber güvenlik araçları yüklendi.\x1b[0m\n[*] Kullanılabilir araçları görmek için \x1b[32m'help'\x1b[0m yazın (curl, sqli, decode, cookie, fuzz, vb.).`,
       type: 'system',
       timestamp: new Date().toLocaleTimeString()
     }
@@ -148,7 +148,7 @@ export const WebTerminal: React.FC<WebTerminalProps> = ({
             <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#27c93f', display: 'inline-block' }} />
           </div>
           <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
-            sh // student@hackerarena
+            sh // student@siberadam
           </span>
         </div>
 
@@ -190,7 +190,7 @@ export const WebTerminal: React.FC<WebTerminalProps> = ({
           <div key={idx} style={{ position: 'relative' }}>
             {item.command !== 'system-init' && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <span style={{ color: 'var(--accent-green)', fontWeight: 700 }}>student@hackerarena:~$</span>
+                <span style={{ color: 'var(--accent-green)', fontWeight: 700 }}>student@siberadam:~$</span>
                 <span style={{ color: '#fff' }}>{item.command}</span>
                 <span style={{ fontSize: '10px', color: 'var(--text-dim)', marginLeft: 'auto' }}>
                   {item.timestamp}

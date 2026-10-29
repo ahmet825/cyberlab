@@ -1,6 +1,7 @@
 {
   "name": "siberadam",
   "framework": "vite",
+  "cleanUrls": true,
   "headers": [
     {
       "source": "/(.*)",

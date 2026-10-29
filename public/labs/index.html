@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uygulamalı Web Güvenliği Laboratuvarları & Zafiyet Kataloğu // SiberAdam</title>
+  <meta name="title" content="Uygulamalı Web Güvenliği Laboratuvarları & Zafiyet Kataloğu // SiberAdam" />
+  <meta name="description" content="SQL Injection, XSS, IDOR, Path Traversal, Host Header Injection ve AI Jailbreak gibi OWASP Top 10 zafiyetlerini kurulumsuz canlı laboratuvarlarda çözün." />
+  <meta name="keywords" content="uygulamalı siber güvenlik laboratuvarı, owasp top 10 lab çözümleri, sql injection eğitimi, xss pratik lab, idor zafiyeti, etik hacker eğitimi platformu, ctf laboratuvarı türkçe" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://siberadam.vercel.app/labs/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://siberadam.vercel.app/labs/" />
+  <meta property="og:title" content="Uygulamalı Web Güvenliği Laboratuvarları Kataloğu // SiberAdam" />
+  <meta property="og:description" content="12 interaktif laboratuvarda canlı HTTP analizi, Burp Repeater simülasyonu ve Web Terminal ile uygulamalı siber güvenlik eğitimi." />
+  <meta property="og:image" content="https://siberadam.vercel.app/story/frame_5_arena.jpg" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+  :root {
+    --bg-darker: #040711;
+    --bg-card: #0b1329;
+    --bg-card-hover: #101c3d;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-accent: rgba(0, 255, 157, 0.3);
+    --accent-green: #00ff9d;
+    --accent-cyan: #00f0ff;
+    --accent-orange: #f59e0b;
+    --accent-purple: #a855f7;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-darker);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: var(--accent-cyan); text-decoration: none; transition: all 0.2s; }
+  a:hover { color: var(--accent-green); }
+  .sa-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; width: 100%; }
+  
+  /* Header */
+  .sa-header {
+    background: rgba(4, 7, 17, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .sa-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+  .sa-logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 17px; color: #fff; }
+  .sa-logo-tag {
+    font-size: 9px;
+    background: rgba(0, 255, 157, 0.15);
+    color: var(--accent-green);
+    border: 1px solid var(--border-accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+  }
+  .sa-nav { display: flex; align-items: center; gap: 20px; font-size: 13.5px; font-weight: 600; }
+  .sa-nav a { color: var(--text-muted); }
+  .sa-nav a:hover, .sa-nav a.active { color: #fff; }
+  .sa-btn-primary {
+    background: linear-gradient(135deg, rgba(0, 255, 157, 0.2), rgba(0, 240, 255, 0.15));
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green) !important;
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .sa-btn-primary:hover {
+    background: var(--accent-green);
+    color: #000 !important;
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.4);
+  }
+
+  /* Breadcrumbs */
+  .sa-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 24px 0 16px;
+    font-family: var(--font-mono);
+  }
+  .sa-breadcrumbs span { color: rgba(255, 255, 255, 0.2); }
+
+  /* Hero Card */
+  .sa-lab-hero {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sa-lab-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+  }
+  .sa-badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .sa-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+  .sa-badge-cat { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+  .sa-badge-diff { background: rgba(0, 240, 255, 0.12); color: var(--accent-cyan); border: 1px solid rgba(0, 240, 255, 0.3); }
+  .sa-badge-time { background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid var(--border-subtle); }
+  
+  h1 { font-size: 28px; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 14px; letter-spacing: -0.5px; }
+  h2 { font-size: 20px; font-weight: 700; color: #fff; margin: 32px 0 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; }
+  h3 { font-size: 16px; font-weight: 700; color: #f1f5f9; margin: 18px 0 8px; }
+  p { margin-bottom: 14px; color: #cbd5e1; font-size: 14.5px; }
+
+  /* CTA Launch Button */
+  .sa-launch-box {
+    margin-top: 24px;
+    padding: 20px;
+    background: rgba(0, 255, 157, 0.06);
+    border: 1px solid var(--border-accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .sa-launch-btn {
+    background: var(--accent-green);
+    color: #040711;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    padding: 12px 24px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+  }
+  .sa-launch-btn:hover {
+    background: #fff;
+    color: #000;
+    transform: translateY(-1px);
+    box-shadow: 0 0 25px rgba(0, 255, 157, 0.5);
+  }
+
+  /* Grid Layout */
+  .sa-main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-bottom: 50px;
+  }
+  @media (max-width: 860px) {
+    .sa-main-grid { grid-template-columns: 1fr; }
+    .sa-header-content { flex-direction: column; height: auto; padding: 12px 0; gap: 10px; }
+    .sa-nav { flex-wrap: wrap; justify-content: center; }
+  }
+
+  /* Stages List */
+  .sa-stage-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 14px;
+  }
+  .sa-stage-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0, 240, 255, 0.15);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Code Block */
+  pre {
+    background: #02040a;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 14px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--accent-green);
+    overflow-x: auto;
+    margin-bottom: 14px;
+  }
+
+  /* Defense Box */
+  .sa-defense-box {
+    background: rgba(16, 185, 129, 0.05);
+    border-left: 3px solid var(--accent-green);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .sa-defense-box li {
+    margin-left: 20px;
+    color: #e2e8f0;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  /* Sidebar Widget */
+  .sa-widget {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .sa-widget h4 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px; }
+  .sa-widget-list { list-style: none; }
+  .sa-widget-list li { margin-bottom: 10px; font-size: 13px; }
+
+  /* Footer */
+  .sa-footer {
+    background: #020409;
+    border-top: 1px solid var(--border-subtle);
+    padding: 40px 0 24px;
+    margin-top: auto;
+  }
+  .sa-footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+  }
+  @media (max-width: 768px) {
+    .sa-footer-grid { grid-template-columns: 1fr; }
+  }
+  .sa-footer-links { list-style: none; }
+  .sa-footer-links li { margin-bottom: 8px; font-size: 13px; }
+  .sa-footer-links a { color: var(--text-muted); }
+  .sa-footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 20px;
+    font-size: 12px;
+    color: #64748b;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  
+    <header class="sa-header">
+      <div class="sa-container sa-header-content">
+        <a href="/" class="sa-logo">
+          <span class="sa-logo-icon">🛡️</span>
+          <span class="sa-logo-text">SİBER<strong>ADAM</strong></span>
+          <span class="sa-logo-tag">LABS</span>
+        </a>
+        <nav class="sa-nav">
+          <a href="/" class="">Ana Sayfa</a>
+          <a href="/labs/" class="active">Laboratuvarlar (12)</a>
+          <a href="/linux/hedef-istasyon-debian-terminal/" class="">Linux CTF</a>
+          <a href="/#arena" class="sa-btn-primary">Arena'yı Başlat ⚡</a>
+        </nav>
+      </div>
+    </header>
+  
+
+  <main class="sa-container" style="padding-top: 30px; padding-bottom: 50px;">
+    <div style="text-align: center; max-width: 760px; margin: 0 auto 40px;">
+      <span class="sa-badge sa-badge-diff" style="margin-bottom: 12px; display: inline-block;">12 KUSURLU LABORATUVAR & CANLI SİMÜLASYON</span>
+      <h1 style="font-size: 32px; margin-bottom: 12px;">Uygulamalı Zafiyet Analizi & CTF Kataloğu</h1>
+      <p style="font-size: 15px; color: #94a3b8;">
+        Sanal makine kurmadan, tarayıcınızda doğrudan gerçek HTTP isteklerini manipüle edin, 
+        veritabanı sorgularını kırın ve bayrakları yakalayarak etik hackerlık reflekslerinizi geliştirin.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+      
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 01</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">XSS (Cross-Site Scripting)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/reflected-xss-arama-zafiyeti/">Reflected XSS Arama Zafiyeti & Çözümü</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Arama motorları gibi girdi parametrelerinin filtrelenmeden doğrudan HTML içine yansıtıldığı noktalarda kötü niyetli JavaScript kodlarının çalıştırılması zafiyetidir.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Başlangıç (Apprentice)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/reflected-xss-arama-zafiyeti/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-xss-multi-filter" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 02</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">SQLi (SQL Injection)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/sql-injection-auth-bypass/">SQL Injection Auth Bypass (Parolasız Giriş)</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Kullanıcı kimlik doğrulama sorgusunun parametreli yapılmaması nedeniyle saldırganın mantıksal koşul enjekte ederek parola bilmeden oturum açması zafiyetidir.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Başlangıç (Apprentice)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/sql-injection-auth-bypass/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-sqli-auth-bypass" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 03</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">SQLi (SQL Injection)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/sql-injection-union-tablo-dokumu/">UNION Tabanlı SQL Injection & Tablo Dökümü</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Orijinal SQL sorgusuna UNION operatörü ekleyerek ek bir SELECT sorgusu çalıştırma ve sistem tablolarından veri sızdırma zafiyetidir.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Başlangıç (Apprentice)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/sql-injection-union-tablo-dokumu/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-sqli-union-schema" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 04</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Keşif & Bilgi İfşası (Recon)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/robots-txt-gizli-dizin-kesfi/">robots.txt ve Gizli Dizin Keşfi (Reconnaissance)</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Arama motoru botlarını yönlendirmek için oluşturulan robots.txt dosyasının, hassas ve gizli yönetici dizinlerini saldırganlara açıkça ifşa etmesi durumudur.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Başlangıç (Apprentice)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/robots-txt-gizli-dizin-kesfi/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-recon-robots" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 05</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Yetkilendirme & Çerez Güvenliği</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/cookie-tampering-yetki-yukseltme/">Çerez Sahteciliği (Cookie Tampering) ile Yetki Yükseltme</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Yetki seviyelerinin (role, access_tier) sunucu yerine istemci tarafında değiştirilebilir HTTP çerezlerinde saklanması sonucu yetki yükseltme açığıdır.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Orta Seviye (Practitioner)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/cookie-tampering-yetki-yukseltme/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-cookie-tamper" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 06</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Erişim Denetimi (IDOR / BOLA)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/idor-bola-kirik-nesne-yetkilendirme/">BOLA / IDOR Kırık Nesne Düzeyinde Yetkilendirme</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Uygulamanın nesne erişim isteklerinde (kullanıcı profili, sipariş, mesaj vb.) çağıran kullanıcının o nesneye erişim yetkisi olup olmadığını denetlememesi zafiyetidir.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Orta Seviye (Practitioner)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/idor-bola-kirik-nesne-yetkilendirme/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-auth-bola-idor" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 07</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">XSS (Kalıcı Zafiyetler)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/stored-kalici-xss-guvensiz-yorum/">Kalıcı (Stored) XSS ve Güvensiz Yorum Sistemi</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Kullanıcı girdisinin veritabanına filtrelenmeden kaydedilmesi ve daha sonra sayfayı açan tüm ziyaretçilerin tarayıcısında otomatik çalışması zafiyetidir.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Orta Seviye (Practitioner)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/stored-kalici-xss-guvensiz-yorum/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-xss-stored-markdown" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 08</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Dosya Güvenliği (LFI / Path Traversal)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/path-traversal-dizin-asimi/">Dizin Aşımı (Path Traversal) ile Hassas Dosya Okuma</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Uygulamanın dosya okuma işlevinde dosya yolunu doğrulamaması sonucu saldırganın ../ dizin karakterleriyle web kök dizini dışındaki sistem dosyalarını okumasıdır.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Orta Seviye (Practitioner)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/path-traversal-dizin-asimi/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-path-traversal" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 09</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Protokol İstismarı (HTTP Metotları)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/http-verb-tampering-metot-manipulasyonu/">HTTP Verb Tampering (Metot Manipülasyonu) ile Erişim Aşımı</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Güvenlik filtrelerinin yalnızca belirli HTTP metotlarını (örn. yalnızca GET veya POST) denetleyip diğer alternatif metotları gözden kaçırması durumudur.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">İleri Seviye (Expert)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/http-verb-tampering-metot-manipulasyonu/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-recon-verb-tampering" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 10</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Protokol İstismarı (Host Header)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/host-header-injection-zehirleme/">HTTP Host Başlığı Zehirleme (Host Header Injection)</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Sunucunun HTTP istek başlığındaki Host değerini doğrulamadan şifre sıfırlama e-postaları veya dinamik link oluşturmada kullanması zafiyetidir.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">İleri Seviye (Expert)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/host-header-injection-zehirleme/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-recon-host-injection" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 11</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">SQLi (İleri Düzey Kör Enjeksiyon)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/blind-boolean-sql-injection/">Kör SQL Enjeksiyonu (Blind Boolean-Based SQLi)</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Sunucunun veritabanı hatalarını veya sorgu sonuçlarını doğrudan ekrana basmadığı, ancak sayfa içeriğindeki ince değişimlerle mantıksal doğru/yanlış tepkisi verdiği zafiyettir.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">İleri Seviye (Expert)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/blind-boolean-sql-injection/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-sqli-blind-boolean" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 12</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Yapay Zeka Güvenliği (LLM Security)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/llm-prompt-injection-ai-jailbreak/">LLM Prompt Injection & AI Güvenlik Duvarı Aşımı (Jailbreak)</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Kullanıcının dil modeli girdi alanlarına özel komutlar enjekte ederek modelin sistem talimatlarını (system prompt) ve güvenlik bariyerlerini (guardrails) çiğnetmesidir.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">İleri Seviye (Expert)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/llm-prompt-injection-ai-jailbreak/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-ai-jailbreak-guardrail" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    </div>
+  </main>
+
+  
+    <footer class="sa-footer">
+      <div class="sa-container">
+        <div class="sa-footer-grid">
+          <div>
+            <div class="sa-logo" style="margin-bottom: 12px;">
+              <span class="sa-logo-icon">🛡️</span>
+              <span class="sa-logo-text">SİBER<strong>ADAM</strong></span>
+            </div>
+            <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; max-width: 380px;">
+              Kurulum gerektirmeyen, tarayıcı tabanlı interaktif siber güvenlik ve zafiyet laboratuvarı eğitim platformu. Gerçek zafiyetleri güvenli simülasyon ortamında uygulamalı öğrenin.
+            </p>
+          </div>
+          <div>
+            <h4 style="color: #fff; font-size: 14px; margin-bottom: 12px; font-weight: 700;">Hızlı Bağlantılar</h4>
+            <ul class="sa-footer-links">
+              <li><a href="/">Ana Sayfa & Hikaye</a></li>
+              <li><a href="/labs/">Laboratuvar Kataloğu</a></li>
+              <li><a href="/linux/hedef-istasyon-debian-terminal/">Linux Öğrenme Makinesi</a></li>
+              <li><a href="/#arena">Etkileşimli Pentest Arenası</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 style="color: #fff; font-size: 14px; margin-bottom: 12px; font-weight: 700;">Yasal & Güvenlik</h4>
+            <ul class="sa-footer-links">
+              <li><a href="/#/feragatname">Eğitim Feragatnamesi & Yasal Uyarı</a></li>
+              <li><a href="/#/kvkk">KVKK Aydınlatma Metni & Çerezler</a></li>
+              <li><a href="/sitemap.xml">XML Site Haritası</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="sa-footer-bottom">
+          <p>© 2026 SiberAdam. Bu platform yalnızca etik siber güvenlik eğitimi ve zafiyet analizi için tasarlanmıştır.</p>
+        </div>
+      </div>
+    </footer>
+  
+</body>
+</html>

@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Çerez Sahteciliği (Cookie Tampering) ile Yetki Yükseltme // SiberAdam</title>
+  <meta name="title" content="Çerez Sahteciliği (Cookie Tampering) ile Yetki Yükseltme // SiberAdam" />
+  <meta name="description" content="İstemci çerezlerinde saklanan rol bilgisini (user_role, access_tier) terminal veya DevTools ile değiştirerek Admin yetkisine yükselme laboratuvarı." />
+  <meta name="keywords" content="çerez manipülasyonu ile yetki yükseltme, cookie tampering lab, privilege escalation web, oturum sahteciliği, http-only ve secure çerezler" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link rel="canonical" href="https://siberadam.vercel.app/labs/cookie-tampering-yetki-yukseltme/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://siberadam.vercel.app/labs/cookie-tampering-yetki-yukseltme/" />
+  <meta property="og:title" content="Çerez Sahteciliği (Cookie Tampering) ile Yetki Yükseltme // SiberAdam" />
+  <meta property="og:description" content="İstemci çerezlerinde saklanan rol bilgisini (user_role, access_tier) terminal veya DevTools ile değiştirerek Admin yetkisine yükselme laboratuvarı." />
+  <meta property="og:image" content="https://siberadam.vercel.app/story/frame_5_arena.jpg" />
+  <meta property="og:site_name" content="SiberAdam" />
+  <meta property="og:locale" content="tr_TR" />
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://siberadam.vercel.app/labs/cookie-tampering-yetki-yukseltme/" />
+  <meta name="twitter:title" content="Çerez Sahteciliği (Cookie Tampering) ile Yetki Yükseltme // SiberAdam" />
+  <meta name="twitter:description" content="İstemci çerezlerinde saklanan rol bilgisini (user_role, access_tier) terminal veya DevTools ile değiştirerek Admin yetkisine yükselme laboratuvarı." />
+  <meta name="twitter:image" content="https://siberadam.vercel.app/story/frame_5_arena.jpg" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+  :root {
+    --bg-darker: #040711;
+    --bg-card: #0b1329;
+    --bg-card-hover: #101c3d;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-accent: rgba(0, 255, 157, 0.3);
+    --accent-green: #00ff9d;
+    --accent-cyan: #00f0ff;
+    --accent-orange: #f59e0b;
+    --accent-purple: #a855f7;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-darker);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: var(--accent-cyan); text-decoration: none; transition: all 0.2s; }
+  a:hover { color: var(--accent-green); }
+  .sa-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; width: 100%; }
+  
+  /* Header */
+  .sa-header {
+    background: rgba(4, 7, 17, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .sa-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+  .sa-logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 17px; color: #fff; }
+  .sa-logo-tag {
+    font-size: 9px;
+    background: rgba(0, 255, 157, 0.15);
+    color: var(--accent-green);
+    border: 1px solid var(--border-accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+  }
+  .sa-nav { display: flex; align-items: center; gap: 20px; font-size: 13.5px; font-weight: 600; }
+  .sa-nav a { color: var(--text-muted); }
+  .sa-nav a:hover, .sa-nav a.active { color: #fff; }
+  .sa-btn-primary {
+    background: linear-gradient(135deg, rgba(0, 255, 157, 0.2), rgba(0, 240, 255, 0.15));
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green) !important;
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .sa-btn-primary:hover {
+    background: var(--accent-green);
+    color: #000 !important;
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.4);
+  }
+
+  /* Breadcrumbs */
+  .sa-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 24px 0 16px;
+    font-family: var(--font-mono);
+  }
+  .sa-breadcrumbs span { color: rgba(255, 255, 255, 0.2); }
+
+  /* Hero Card */
+  .sa-lab-hero {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sa-lab-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+  }
+  .sa-badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .sa-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+  .sa-badge-cat { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+  .sa-badge-diff { background: rgba(0, 240, 255, 0.12); color: var(--accent-cyan); border: 1px solid rgba(0, 240, 255, 0.3); }
+  .sa-badge-time { background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid var(--border-subtle); }
+  
+  h1 { font-size: 28px; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 14px; letter-spacing: -0.5px; }
+  h2 { font-size: 20px; font-weight: 700; color: #fff; margin: 32px 0 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; }
+  h3 { font-size: 16px; font-weight: 700; color: #f1f5f9; margin: 18px 0 8px; }
+  p { margin-bottom: 14px; color: #cbd5e1; font-size: 14.5px; }
+
+  /* CTA Launch Button */
+  .sa-launch-box {
+    margin-top: 24px;
+    padding: 20px;
+    background: rgba(0, 255, 157, 0.06);
+    border: 1px solid var(--border-accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .sa-launch-btn {
+    background: var(--accent-green);
+    color: #040711;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    padding: 12px 24px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+  }
+  .sa-launch-btn:hover {
+    background: #fff;
+    color: #000;
+    transform: translateY(-1px);
+    box-shadow: 0 0 25px rgba(0, 255, 157, 0.5);
+  }
+
+  /* Grid Layout */
+  .sa-main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-bottom: 50px;
+  }
+  @media (max-width: 860px) {
+    .sa-main-grid { grid-template-columns: 1fr; }
+    .sa-header-content { flex-direction: column; height: auto; padding: 12px 0; gap: 10px; }
+    .sa-nav { flex-wrap: wrap; justify-content: center; }
+  }
+
+  /* Stages List */
+  .sa-stage-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 14px;
+  }
+  .sa-stage-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0, 240, 255, 0.15);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Code Block */
+  pre {
+    background: #02040a;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 14px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--accent-green);
+    overflow-x: auto;
+    margin-bottom: 14px;
+  }
+
+  /* Defense Box */
+  .sa-defense-box {
+    background: rgba(16, 185, 129, 0.05);
+    border-left: 3px solid var(--accent-green);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .sa-defense-box li {
+    margin-left: 20px;
+    color: #e2e8f0;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  /* Sidebar Widget */
+  .sa-widget {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .sa-widget h4 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px; }
+  .sa-widget-list { list-style: none; }
+  .sa-widget-list li { margin-bottom: 10px; font-size: 13px; }
+
+  /* Footer */
+  .sa-footer {
+    background: #020409;
+    border-top: 1px solid var(--border-subtle);
+    padding: 40px 0 24px;
+    margin-top: auto;
+  }
+  .sa-footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+  }
+  @media (max-width: 768px) {
+    .sa-footer-grid { grid-template-columns: 1fr; }
+  }
+  .sa-footer-links { list-style: none; }
+  .sa-footer-links li { margin-bottom: 8px; font-size: 13px; }
+  .sa-footer-links a { color: var(--text-muted); }
+  .sa-footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 20px;
+    font-size: 12px;
+    color: #64748b;
+    text-align: center;
+  }
+</style>
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://siberadam.vercel.app/labs/cookie-tampering-yetki-yukseltme/#article",
+      "headline": "Çerez Sahteciliği (Cookie Tampering) ile Yetki Yükseltme // SiberAdam",
+      "description": "İstemci çerezlerinde saklanan rol bilgisini (user_role, access_tier) terminal veya DevTools ile değiştirerek Admin yetkisine yükselme laboratuvarı.",
+      "keywords": "çerez manipülasyonu ile yetki yükseltme, cookie tampering lab, privilege escalation web, oturum sahteciliği, http-only ve secure çerezler",
+      "inLanguage": "tr",
+      "author": {
+        "@type": "Organization",
+        "name": "SiberAdam",
+        "url": "https://siberadam.vercel.app"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "SiberAdam",
+        "url": "https://siberadam.vercel.app"
+      },
+      "mainEntityOfPage": "https://siberadam.vercel.app/labs/cookie-tampering-yetki-yukseltme/"
+    },
+    {
+      "@type": "Course",
+      "@id": "https://siberadam.vercel.app/labs/cookie-tampering-yetki-yukseltme/#course",
+      "name": "Çerez Sahteciliği (Cookie Tampering) ile Yetki Yükseltme",
+      "description": "Yetki seviyelerinin (role, access_tier) sunucu yerine istemci tarafında değiştirilebilir HTTP çerezlerinde saklanması sonucu yetki yükseltme açığıdır.",
+      "educationalLevel": "Orta Seviye (Practitioner)",
+      "isAccessibleForFree": true,
+      "inLanguage": "tr",
+      "provider": {
+        "@type": "Organization",
+        "name": "SiberAdam",
+        "url": "https://siberadam.vercel.app"
+      }
+    }
+  ]
+}</script>
+</head>
+<body>
+  
+    <header class="sa-header">
+      <div class="sa-container sa-header-content">
+        <a href="/" class="sa-logo">
+          <span class="sa-logo-icon">🛡️</span>
+          <span class="sa-logo-text">SİBER<strong>ADAM</strong></span>
+          <span class="sa-logo-tag">LABS</span>
+        </a>
+        <nav class="sa-nav">
+          <a href="/" class="">Ana Sayfa</a>
+          <a href="/labs/" class="active">Laboratuvarlar (12)</a>
+          <a href="/linux/hedef-istasyon-debian-terminal/" class="">Linux CTF</a>
+          <a href="/#arena" class="sa-btn-primary">Arena'yı Başlat ⚡</a>
+        </nav>
+      </div>
+    </header>
+  
+
+  <main class="sa-container">
+    <div class="sa-breadcrumbs">
+      <a href="/">Ana Sayfa</a>
+      <span>/</span>
+      <a href="/labs/">Laboratuvarlar</a>
+      <span>/</span>
+      <span style="color: var(--accent-cyan);">Çerez Sahteciliği (Cookie Tampering) ile Yetki Yükseltme</span>
+    </div>
+
+    <section class="sa-lab-hero">
+      <div class="sa-badge-row">
+        <span class="sa-badge sa-badge-cat">Yetkilendirme & Çerez Güvenliği</span>
+        <span class="sa-badge sa-badge-diff">Orta Seviye (Practitioner)</span>
+        <span class="sa-badge sa-badge-time">⏱️ 12 Dakika</span>
+        <span class="sa-badge sa-badge-time">🛡️ OWASP Top 10 - A01: Broken Access Control</span>
+      </div>
+      <h1>Çerez Sahteciliği (Cookie Tampering) ile Yetki Yükseltme</h1>
+      <p style="font-size: 16px; color: #cbd5e1; max-width: 820px; line-height: 1.6;">
+        Yetki seviyelerinin (role, access_tier) sunucu yerine istemci tarafında değiştirilebilir HTTP çerezlerinde saklanması sonucu yetki yükseltme açığıdır.
+      </p>
+
+      <div class="sa-launch-box">
+        <div>
+          <h4 style="color: #fff; font-size: 14px; margin-bottom: 2px;">Laboratuvarı Tarayıcınızda Canlı Deneyin</h4>
+          <p style="color: #94a3b8; font-size: 12px; margin: 0;">Kurulumsuz, sanal hedef tarayıcı ve web terminali ile doğrudan zafiyeti istismar edin.</p>
+        </div>
+        <a href="https://siberadam.vercel.app/#/pentest/lab-cookie-tamper" class="sa-launch-btn">Laboratuvara Gir ⚡</a>
+      </div>
+    </section>
+
+    <div class="sa-main-grid">
+      <article>
+        <h2>Görev ve Zafiyet Senaryosu</h2>
+        <p>Uygulama oturum çerezinde user_role=guest veya access_tier=student değerini tutmakta ve sunucu her istekte kullanıcının veritabanındaki gerçek rolünü doğrulamak yerine çerezdeki değere güvenmektedir. Saldırgan çerezi admin yaparak sisteme tam erişim sağlar.</p>
+
+        <h3>Hedef (Objective)</h3>
+        <p style="background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); padding: 14px; border-radius: 6px; font-size: 14px; color: #e2e8f0;">
+          🎯 <strong>Görev:</strong> Tarayıcı Çerezler sekmesini veya CyberTerminal cookie komutunu kullanarak user_role veya access_tier çerezini admin olarak güncelleyin ve Admin paneline erişin.
+        </p>
+
+        <h2>Adım Adım Çözüm Metodolojisi</h2>
+        <div style="margin-bottom: 24px;">
+          
+    <div class="sa-stage-item">
+      <div class="sa-stage-num">1</div>
+      <div>
+        <h4 style="color: #fff; font-size: 14px; margin-bottom: 4px;">Mevcut Çerezleri İnceleme</h4>
+        <p style="font-size: 13px; color: #94a3b8; margin: 0;">DevTools Cookies sekmesini açın veya terminalde cookie get yazarak etkin çerezleri listeleyin.</p>
+      </div>
+    </div>
+  
+    <div class="sa-stage-item">
+      <div class="sa-stage-num">2</div>
+      <div>
+        <h4 style="color: #fff; font-size: 14px; margin-bottom: 4px;">Rol Parametresini Değiştirme</h4>
+        <p style="font-size: 13px; color: #94a3b8; margin: 0;">Terminalde cookie set user_role admin veya DevTools üzerinden çerez değerini admin yapın.</p>
+      </div>
+    </div>
+  
+    <div class="sa-stage-item">
+      <div class="sa-stage-num">3</div>
+      <div>
+        <h4 style="color: #fff; font-size: 14px; margin-bottom: 4px;">Sayfayı Yenileyip Yetkiyi Alma</h4>
+        <p style="font-size: 13px; color: #94a3b8; margin: 0;">Yönetim alanına istek atın; sunucu admin çerezini kabul ederek bayrağı teslim edecektir.</p>
+      </div>
+    </div>
+  
+        </div>
+
+        <h2>Örnek Payload ve İstismar Kalıpları</h2>
+        <pre><code>cookie set user_role admin</code>
+<code>cookie set access_tier admin</code>
+<code>document.cookie=&quot;user_role=admin; path=/&quot;</code>
+</pre>
+
+        <h2>Güvenli Kodlama ve Savunma Mekanizmaları</h2>
+        <div class="sa-defense-box">
+          <h4 style="color: #fff; font-size: 14px; margin-bottom: 10px;">Zafiyet Nasıl Kapatılır?</h4>
+          <ul>
+            <li>Yetki ve rol bilgilerini asla istemci çerezlerinde açık metin (plaintext) olarak saklamayın; sunucu taraflı session oturumları kullanın.</li><li>Çerezlere daima HttpOnly, Secure ve SameSite=Strict bayrakları ekleyin.</li><li>İstemciden gelen oturum token larını her kritik işlemde sunucuda yetki tablosuyla doğrulayın.</li>
+          </ul>
+        </div>
+
+        <div style="margin-top: 36px; padding: 24px; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border-accent);">
+          <h3 style="color: #fff; margin-bottom: 8px;">Uygulamaya Başlamaya Hazır mısınız?</h3>
+          <p style="color: #94a3b8; font-size: 13.5px; margin-bottom: 16px;">SiberAdam interaktif arenasında hedef tarayıcı, DevTools ve CyberTerminal ile bayrağı hemen yakalayın.</p>
+          <a href="https://siberadam.vercel.app/#/pentest/lab-cookie-tamper" class="sa-launch-btn">Şimdi Çözmeye Başla ⚡</a>
+        </div>
+      </article>
+
+      <aside>
+        <div class="sa-widget">
+          <h4>Zafiyet Detayları</h4>
+          <ul class="sa-widget-list" style="font-family: var(--font-mono); font-size: 12px;">
+            <li style="color: #94a3b8;">Kategori: <strong style="color: #fff;">Yetkilendirme & Çerez Güvenliği</strong></li>
+            <li style="color: #94a3b8;">Zorluk: <strong style="color: var(--accent-cyan);">Orta Seviye (Practitioner)</strong></li>
+            <li style="color: #94a3b8;">Süre: <strong style="color: #fff;">12 Dk</strong></li>
+            <li style="color: #94a3b8;">Standart: <strong style="color: var(--accent-green);">OWASP Top 10 - A01: Broken Access Control</strong></li>
+            <li style="color: #94a3b8;">Ortam: <strong style="color: #fff;">Tarayıcı WASM</strong></li>
+          </ul>
+        </div>
+
+        <div class="sa-widget">
+          <h4>İlgili Laboratuvarlar</h4>
+          <ul class="sa-widget-list">
+            
+    <li>
+      <a href="/labs/reflected-xss-arama-zafiyeti/" style="display: block;">
+        <span style="color: #cbd5e1; font-weight: 600;">Reflected XSS Arama Zafiyeti & Çözümü</span>
+        <span style="display: block; font-size: 11px; color: #64748b; font-family: var(--font-mono);">XSS (Cross-Site Scripting)</span>
+      </a>
+    </li>
+  
+    <li>
+      <a href="/labs/sql-injection-auth-bypass/" style="display: block;">
+        <span style="color: #cbd5e1; font-weight: 600;">SQL Injection Auth Bypass (Parolasız Giriş)</span>
+        <span style="display: block; font-size: 11px; color: #64748b; font-family: var(--font-mono);">SQLi (SQL Injection)</span>
+      </a>
+    </li>
+  
+    <li>
+      <a href="/labs/sql-injection-union-tablo-dokumu/" style="display: block;">
+        <span style="color: #cbd5e1; font-weight: 600;">UNION Tabanlı SQL Injection & Tablo Dökümü</span>
+        <span style="display: block; font-size: 11px; color: #64748b; font-family: var(--font-mono);">SQLi (SQL Injection)</span>
+      </a>
+    </li>
+  
+    <li>
+      <a href="/labs/robots-txt-gizli-dizin-kesfi/" style="display: block;">
+        <span style="color: #cbd5e1; font-weight: 600;">robots.txt ve Gizli Dizin Keşfi (Reconnaissance)</span>
+        <span style="display: block; font-size: 11px; color: #64748b; font-family: var(--font-mono);">Keşif & Bilgi İfşası (Recon)</span>
+      </a>
+    </li>
+  
+    <li>
+      <a href="/labs/idor-bola-kirik-nesne-yetkilendirme/" style="display: block;">
+        <span style="color: #cbd5e1; font-weight: 600;">BOLA / IDOR Kırık Nesne Düzeyinde Yetkilendirme</span>
+        <span style="display: block; font-size: 11px; color: #64748b; font-family: var(--font-mono);">Erişim Denetimi (IDOR / BOLA)</span>
+      </a>
+    </li>
+  
+          </ul>
+        </div>
+
+        <div class="sa-widget" style="background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.3);">
+          <h4 style="color: #c084fc;">🤖 CyberAI Mentor</h4>
+          <p style="font-size: 12.5px; color: #cbd5e1; line-height: 1.5; margin-bottom: 10px;">
+            Çözümde tıkandığınızda platformdaki yapay zeka mentoru doğrudan cevap vermek yerine Sokratik ipuçlarıyla rehberlik eder.
+          </p>
+          <a href="https://siberadam.vercel.app/#/pentest/lab-cookie-tamper" style="font-size: 12px; font-weight: 700; color: var(--accent-green);">Mentora Soru Sor →</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  
+    <footer class="sa-footer">
+      <div class="sa-container">
+        <div class="sa-footer-grid">
+          <div>
+            <div class="sa-logo" style="margin-bottom: 12px;">
+              <span class="sa-logo-icon">🛡️</span>
+              <span class="sa-logo-text">SİBER<strong>ADAM</strong></span>
+            </div>
+            <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; max-width: 380px;">
+              Kurulum gerektirmeyen, tarayıcı tabanlı interaktif siber güvenlik ve zafiyet laboratuvarı eğitim platformu. Gerçek zafiyetleri güvenli simülasyon ortamında uygulamalı öğrenin.
+            </p>
+          </div>
+          <div>
+            <h4 style="color: #fff; font-size: 14px; margin-bottom: 12px; font-weight: 700;">Hızlı Bağlantılar</h4>
+            <ul class="sa-footer-links">
+              <li><a href="/">Ana Sayfa & Hikaye</a></li>
+              <li><a href="/labs/">Laboratuvar Kataloğu</a></li>
+              <li><a href="/linux/hedef-istasyon-debian-terminal/">Linux Öğrenme Makinesi</a></li>
+              <li><a href="/#arena">Etkileşimli Pentest Arenası</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 style="color: #fff; font-size: 14px; margin-bottom: 12px; font-weight: 700;">Yasal & Güvenlik</h4>
+            <ul class="sa-footer-links">
+              <li><a href="/#/feragatname">Eğitim Feragatnamesi & Yasal Uyarı</a></li>
+              <li><a href="/#/kvkk">KVKK Aydınlatma Metni & Çerezler</a></li>
+              <li><a href="/sitemap.xml">XML Site Haritası</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="sa-footer-bottom">
+          <p>© 2026 SiberAdam. Bu platform yalnızca etik siber güvenlik eğitimi ve zafiyet analizi için tasarlanmıştır.</p>
+        </div>
+      </div>
+    </footer>
+  
+</body>
+</html>

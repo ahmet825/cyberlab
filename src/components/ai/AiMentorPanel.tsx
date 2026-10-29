@@ -133,7 +133,6 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
   };
 
   const hasDeepInfra = Boolean(deepInfraApiKey?.trim());
-  const shortModelName = deepInfraModel ? deepInfraModel.split('/').pop() : 'Llama-3.3-70B';
 
   const quickPrompts = [
     { label: '💡 Nereden başlamalıyım?', query: 'Nereden başlamalıyım?' },
@@ -193,7 +192,7 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
                   border: `1px solid ${hasDeepInfra ? 'rgba(0, 240, 255, 0.3)' : 'rgba(0, 255, 157, 0.2)'}`
                 }}
               >
-                {hasDeepInfra ? `DeepInfra // ${shortModelName}` : 'Sokratik Motor'}
+                {hasDeepInfra ? 'SiberAI Asistan' : 'Sokratik Motor'}
               </span>
             </div>
             <span
@@ -208,12 +207,12 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
               {currentUser ? (
                 <>
                   <ShieldCheck size={11} />
-                  <span>API Client Doğrulandı ({currentUser.username})</span>
+                  <span>Operatör Hazır ({currentUser.username})</span>
                 </>
               ) : (
                 <>
                   <Lock size={10} />
-                  <span>API Client: Lütfen giriş yapın</span>
+                  <span>Giriş Yapılmadı</span>
                 </>
               )}
             </span>
@@ -363,7 +362,7 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
             }}
           >
             <ShieldAlert size={12} color="#f59e0b" />
-            <span>KİMLİK DOĞRULAMA KORUMASI</span>
+            <span>GÜVENLİ MENTOR ERİŞİMİ</span>
           </div>
 
           <h3
@@ -388,7 +387,7 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
               marginBottom: '18px'
             }}
           >
-            CyberAI Mentor ile laboratuvarlarda yapay zeka rehberliği almak, zafiyet ipuçlarını ve Sokratik analizleri görüntülemek için lütfen giriş yapın.
+            SiberAI Mentor ile laboratuvarlarda yapay zeka rehberliği almak, zafiyet ipuçlarını ve Sokratik analizleri görüntülemek için lütfen giriş yapın.
           </p>
 
           <button
@@ -430,11 +429,11 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#cbd5e1' }}>
               <Bot size={12} color="var(--accent-cyan)" style={{ flexShrink: 0 }} />
-              <span>Llama 3.3 70B & Qwen 2.5 Coder MoE entegrasyonu</span>
+              <span>Gelişmiş Yapay Zeka Siber Güvenlik Modelleri</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#cbd5e1' }}>
               <ShieldCheck size={12} color="var(--accent-green)" style={{ flexShrink: 0 }} />
-              <span>Bulut senkronizasyonu ve korumalı API client</span>
+              <span>Bulut senkronizasyonu ve güvenli ilerleme kaydı</span>
             </div>
           </div>
         </div>
@@ -517,7 +516,7 @@ Başlamak için aşağıdaki hızlı butonlara tıklayabilir veya aklındaki sor
           type="text"
           value={currentUser ? inputText : ''}
           onChange={(e) => currentUser && setInputText(e.target.value)}
-          placeholder={currentUser ? 'Yapay Zeka Mentoruna sor (Socratic mod)...' : 'Lütfen giriş yapın (AI Mentor kilitli)...'}
+          placeholder={currentUser ? 'Siber Güvenlik Mentoruna sor (Sokratik mod)...' : 'AI Mentor için lütfen giriş yapın...'}
           disabled={!currentUser || isTyping}
           style={{
             flex: 1,

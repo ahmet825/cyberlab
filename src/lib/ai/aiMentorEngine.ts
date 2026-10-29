@@ -94,5 +94,5 @@ Tarayıcı DevTools sekmesinden payload'unun DOM'da nasıl durduğunu kontrol et
 
 ${lab.hints[0]?.content}
 
-Hedef web uygulamasında parametreleri kurcalarken tarayıcı DevTools sekmesinde giden istekleri ve Terminaldeki yanıtları karşılaştır. DeepInfra API anahtarı ekleyerek Llama 3.3 70B veya Qwen 2.5 Coder ile canlı diyalog kurabilirsin!`;
+Hedef web uygulamasında parametreleri kurcalarken tarayıcı DevTools sekmesinde giden istekleri ve Terminaldeki yanıtları karşılaştır. Platform ayarlarından yapay zeka modelini yapılandırabilir veya yerleşik akıllı mentorlukla devam edebilirsin!`;
 }

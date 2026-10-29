@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://siberadam.vercel.app/sitemap.xml

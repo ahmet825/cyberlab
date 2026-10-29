@@ -177,7 +177,7 @@ html, body {
   gap: 8px;
 }
 
-/* PortSwigger-style Status Badge */
+/* Solved Status Badge */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -245,7 +245,7 @@ html, body {
   border-color: var(--accent-cyan);
 }
 
-/* PortSwigger Solved Top Banner */
+/* Solved Top Banner */
 .solved-banner {
   background: linear-gradient(90deg, #052e16 0%, #064e3b 50%, #052e16 100%);
   border-bottom: 2px solid var(--accent-green);
