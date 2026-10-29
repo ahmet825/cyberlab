@@ -23,6 +23,24 @@ import { INITIAL_MISSIONS } from '../linux-machine/missionsData';
 import type { LabItem, HubView } from '../../types/lab';
 import type { UserProfile } from '../../types/user';
 
+const LAB_SLUG_MAP: Record<string, string> = {
+  'lab-xss-multi-filter': 'reflected-xss-arama-zafiyeti',
+  'lab-sqli-auth-bypass': 'sql-injection-auth-bypass',
+  'lab-sqli-union-enum': 'sql-injection-union-tablo-dokumu',
+  'lab-recon-robots': 'robots-txt-gizli-dizin-kesfi',
+  'lab-cookie-tamper': 'cookie-tampering-yetki-yukseltme',
+  'lab-auth-bola-idor': 'idor-bola-kirik-nesne-yetkilendirme',
+  'lab-xss-stored-markdown': 'stored-kalici-xss-guvensiz-yorum',
+  'lab-path-traversal': 'path-traversal-dizin-asimi',
+  'lab-recon-verb-tampering': 'http-verb-tampering-metot-manipulasyonu',
+  'lab-recon-host-injection': 'host-header-injection-zehirleme',
+  'lab-sqli-blind-boolean': 'blind-boolean-sql-injection',
+  'lab-ai-jailbreak-guardrail': 'llm-prompt-injection-ai-jailbreak',
+  'lab-jwt-alg-none': 'jwt-none-algoritmasi-imza-atlatma',
+  'lab-dom-xss-json': 'dom-xss-json-sink-zafiyeti',
+  'lab-sqli-error-cast': 'error-based-sql-injection-hata-tabanli'
+};
+
 interface StoryFrame {
   id: number;
   year: string;
@@ -589,11 +607,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 lab.difficulty === 'Apprentice' ? 'Başlangıç' :
                 lab.difficulty === 'Practitioner' ? 'Orta Seviye' : 'İleri Seviye';
 
+              const labSlug = LAB_SLUG_MAP[lab.id];
+              const labHref = labSlug ? `/labs/${labSlug}/` : '/labs/';
+
               return (
-                <div
+                <a
                   key={lab.id}
-                  onClick={() => setSelectedCurriculumLab({ type: 'pentest', lab })}
+                  href={labHref}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSelectedCurriculumLab({ type: 'pentest', lab });
+                  }}
                   style={{
+                    textDecoration: 'none',
+                    color: 'inherit',
                     background: isSelected ? 'rgba(0, 240, 255, 0.12)' : isLocked ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.03)',
                     border: `1px solid ${isSelected ? 'var(--accent-cyan)' : isLocked ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 255, 255, 0.08)'}`,
                     borderRadius: '6px',
@@ -652,17 +679,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <span>{isLocked ? 'Erişmek için Giriş Yapın' : `${lab.stages.length} Aşama Müfredat`}</span>
                     <span style={{ color: isLocked ? '#94a3b8' : '#00f0ff' }}>İncele ↓</span>
                   </div>
-                </div>
+                </a>
               );
             })
           ) : (
             INITIAL_MISSIONS.map((mission, idx) => {
               const isSelected = selectedCurriculumLab?.type === 'linux' && selectedCurriculumLab.mission.id === mission.id;
               return (
-                <div
+                <a
                   key={mission.id}
-                  onClick={() => setSelectedCurriculumLab({ type: 'linux', mission })}
+                  href="/linux/hedef-istasyon-debian-terminal/"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSelectedCurriculumLab({ type: 'linux', mission });
+                  }}
                   style={{
+                    textDecoration: 'none',
+                    color: 'inherit',
                     background: isSelected ? 'rgba(0, 255, 157, 0.12)' : 'rgba(255, 255, 255, 0.03)',
                     border: `1px solid ${isSelected ? '#00ff9d' : 'rgba(255, 255, 255, 0.08)'}`,
                     borderRadius: '6px',
@@ -691,7 +724,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <span>{mission.sectionTitle.split('—')[0]}</span>
                     <span style={{ color: '#00ff9d' }}>İncele ↓</span>
                   </div>
-                </div>
+                </a>
               );
             })
           )}
@@ -736,6 +769,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             transition: 'border-color 0.5s ease'
           }}
         >
+          {/* Primary Semantic H1 for SEO */}
+          <h1
+            style={{
+              position: 'absolute',
+              width: '1px',
+              height: '1px',
+              padding: 0,
+              margin: '-1px',
+              overflow: 'hidden',
+              clip: 'rect(0, 0, 0, 0)',
+              whiteSpace: 'nowrap',
+              border: 0
+            }}
+          >
+            Uygulamalı Siber Güvenlik Dersleri &amp; İnteraktif CTF Laboratuvarı
+          </h1>
+
           {/* Eyebrow Badge */}
           <div
             style={{
@@ -763,7 +813,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* Main Chapter Title */}
-          <h1
+          <h2
             style={{
               fontSize: 'clamp(20px, 2.2vw, 28px)',
               fontWeight: 800,
@@ -775,7 +825,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             }}
           >
             {currentFrame.title}
-          </h1>
+          </h2>
 
           {/* Tagline */}
           <p
@@ -968,7 +1018,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Real Cinematic Artwork */}
             <img
               src={currentFrame.imageSrc}
-              alt={currentFrame.title}
+              alt={`${currentFrame.title} // Siber Güvenlik Dersleri & CTF Laboratuvarı`}
               key={currentFrame.id}
               loading="eager"
               decoding="async"
@@ -1147,7 +1197,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 >
                   <img
                     src={f.imageSrc}
-                    alt={f.year}
+                    alt={`${f.year}: ${f.title} - Siber Güvenlik Hikayesi`}
+                    loading={isSelected ? 'eager' : 'lazy'}
+                    decoding="async"
                     style={{
                       width: '42px',
                       height: '28px',
@@ -1195,7 +1247,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         >
           <img
             src={currentFrame.imageSrc}
-            alt={currentFrame.title}
+            alt={`${currentFrame.title} - Tam Ekran Siber Güvenlik Görseli`}
             style={{
               maxWidth: '92vw',
               maxHeight: '90vh',
@@ -1699,6 +1751,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     {copiedSlug ? <Check size={11} /> : <Copy size={11} />}
                     <span>{copiedSlug ? 'URL Kopyalandı!' : 'SSG URL Paylaş'}</span>
                   </button>
+
+                  {selectedCurriculumLab.type === 'pentest' && LAB_SLUG_MAP[selectedCurriculumLab.lab.id] && (
+                    <a
+                      href={`/labs/${LAB_SLUG_MAP[selectedCurriculumLab.lab.id]}/`}
+                      style={{
+                        width: '100%',
+                        padding: '7px 10px',
+                        background: 'rgba(0, 240, 255, 0.08)',
+                        border: '1px solid rgba(0, 240, 255, 0.25)',
+                        borderRadius: '5px',
+                        color: '#00f0ff',
+                        fontSize: '10px',
+                        fontFamily: 'var(--font-mono)',
+                        textDecoration: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '5px'
+                      }}
+                    >
+                      <BookOpen size={11} />
+                      <span>Zafiyet Rehberi &amp; Kod Analizi ↗</span>
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
@@ -1707,7 +1783,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </div>
 
       {/* ============================================================== */}
-      {/* ALT HUKUKİ LİNKLER (FERAGATNAME & KVKK)                        */}
+      {/* ALT HUKUKİ LİNKLER (FERAGATNAME, KVKK & LAB DİZİNİ)            */}
       {/* ============================================================== */}
       <div
         style={{
@@ -1728,6 +1804,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)'
         }}
       >
+        <a
+          href="/labs/"
+          style={{ color: '#00ff9d', textDecoration: 'none', fontWeight: 700, transition: 'color 0.15s' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#38bdf8')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#00ff9d')}
+        >
+          📚 Zafiyet Lab Kataloğu
+        </a>
+        <span style={{ color: '#334155' }}>|</span>
         <a
           href="#/feragatname"
           style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.15s' }}

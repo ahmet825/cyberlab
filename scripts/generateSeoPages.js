@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 const publicDir = path.resolve(rootDir, 'public');
 
-const SITE_URL = 'https://siberadam.vercel.app';
+const SITE_URL = 'https://siberguvenlikdersleri.com';
 const TODAY = new Date().toISOString().split('T')[0];
 
 const LAB_PAGES = [
@@ -377,6 +377,95 @@ const LAB_PAGES = [
       'Hassas verileri (API anahtarları, parolalar) kesinlikle modelin sistem promptu içinde açık metin olarak barındırmayın.',
       'Girdi ve çıktılarda ikincil güvenlik doğrulama modelleri (Llama Guard, NeMo Guardrails) kullanın.',
       'Kullanıcı girdisini sistem talimatlarından kesin sınırlarla ayıran özel formatlar (XML tags, delimitasyon) tercih edin.'
+    ]
+  },
+  {
+    id: 'lab-jwt-alg-none',
+    slug: 'jwt-none-algoritmasi-imza-atlatma',
+    title: 'JWT "alg: none" İmza Atlama ve Sahtecilik Zafiyeti',
+    category: 'Kimlik Doğrulama & Kriptografi (JWT Security)',
+    difficulty: 'Orta Seviye (Practitioner)',
+    estimatedMinutes: 15,
+    owasp: 'OWASP Top 10 - A02: Cryptographic Failures',
+    metaTitle: 'JWT "alg: none" İmza Atlama Zafiyeti & Çözümü // Siber Güvenlik Dersleri',
+    metaDescription: 'JSON Web Token doğrulamasında alg: none açılarak imza kontrolünün devre dışı bırakılması laboratuvarı ve güvenli JWT kütüphanesi yapılandırması.',
+    nicheKeywords: 'jwt alg none zafiyeti, json web token imza atlatma, jwt signature bypass lab, alg none token forgery, web güvenliği jwt eğitimi',
+    summary: 'Sunucuların JWT doğrularken algoritma başlığını (alg) istemciden gelen none değerine güvenerek imzasız tokenları kabul etmesi sonucu oluşan kritik kimlik doğrulama zafiyetidir.',
+    objective: 'Token başlığında "alg": "none" tanımlayıp imza kısmını silerek sunucuya yönetici (admin) rolünde sahte bir token gönderin ve kasa kilidini açın.',
+    attackScenario: 'API uç noktası gelen Authorization Bearer tokenını çözerken algoritmayı header içerisinden okumakta ve "none" geldiğinde imza doğrulamasını atlamaktadır. Saldırgan rolü "admin" yaparak şifresiz token oluşturur.',
+    stages: [
+      { num: 1, title: 'Token Ayrıştırma', desc: 'Mevcut JWT belirtecini Base64url formatında ayrıştırıp başlık ve yük içeriğini inceleyin.' },
+      { num: 2, title: 'Algoritmayı "none" Yapma', desc: 'Başlıktaki alg değerini "none" olarak değiştirip payload içindeki role değerini "admin" yapın.' },
+      { num: 3, title: 'İmzasız İstek Gönderme & Bayrak', desc: 'Tokenın üçüncü (imza) kısmını boş bırakarak Authorization başlığıyla API kasasına istek atın.' }
+    ],
+    payloads: [
+      'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJyZ2xlIjoiYWRtaW4iLCJ1c2VyIjoiYWRtaW4ifQ.',
+      'Bearer eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJzdWIiOiIxMjM0NTY3ODkwIiwicm9sZSI6ImFkbWluIn0.'
+    ],
+    defenses: [
+      'Sunucuda beklenen algoritmayı (örn: HS256 veya RS256) açıkça zorunlu kılın (whitelisting).',
+      'alg: none başlığını kesinlikle reddeden güncel ve test edilmiş JWT kütüphaneleri kullanın.',
+      'Gizli anahtarları (HMAC secret / RSA private key) güvenli ortam değişkenlerinde saklayın.'
+    ]
+  },
+  {
+    id: 'lab-dom-xss-json',
+    slug: 'dom-xss-json-sink-zafiyeti',
+    title: 'DOM-Based XSS & Güvensiz JSON Ayrıştırma Zafiyeti',
+    category: 'XSS (Cross-Site Scripting)',
+    difficulty: 'Orta Seviye (Practitioner)',
+    estimatedMinutes: 15,
+    owasp: 'OWASP Top 10 - A03: Injection',
+    metaTitle: 'DOM-Based XSS & Güvensiz JSON Sink Zafiyeti // Siber Güvenlik Dersleri',
+    metaDescription: 'URL fragment (#) parametresinin JSON.parse sonrası doğrudan innerHTML sinkine aktarılmasıyla tetiklenen DOM XSS laboratuvarı.',
+    nicheKeywords: 'dom xss laboratuvarı, dom based cross site scripting, json parse innerhtml sink, url fragment xss payload, istemci taraflı xss analizi',
+    summary: 'Sunucuya hiç gitmeden, tamamen istemci tarafında JavaScript kodunun URL fragment (#) veya document.location kaynağından aldığı veriyi innerHTML gibi güvensiz bir alıcıya (sink) yazması zafiyetidir.',
+    objective: 'URL sonundaki hash (#) alanına JSON formatında zararlı bir SVG/IMG payloadı yerleştirerek tarayıcıda DOM tabanlı JavaScript çalıştırın.',
+    attackScenario: 'Kullanıcı profil sayfası tema ayarlarını URL hash parametresinden JSON olarak okumakta ve doğrudan display.innerHTML içerisine yazmaktadır. Saldırgan #{"theme":"<img src=x onerror=alert(1)>"} ile DOM XSS tetikler.',
+    stages: [
+      { num: 1, title: 'DOM Kaynağını (Source) Keşfetme', desc: 'JavaScript kodunda window.location.hash veya document.URL okunan satırları inceleyin.' },
+      { num: 2, title: 'Güvensiz Sink Noktasını Bulma', desc: 'JSON verisinin innerHTML veya eval() fonksiyonuna aktarıldığı yeri tespit edin.' },
+      { num: 3, title: 'Payloadı Enjekte Etme', desc: 'JSON sözdizimini bozmadan HTML tagi içeren JSON objesini URL hash kısmına ekleyin.' }
+    ],
+    payloads: [
+      '#{"theme":"<img src=x onerror=alert(1)>"}',
+      '#{"role":"<svg onload=alert(document.domain)>"}',
+      '#{"display":"<iframe src=javascript:alert(1)></iframe>"}'
+    ],
+    defenses: [
+      'innerHTML yerine textContent veya innerText kullanarak girdiyi salt metin olarak işleyin.',
+      'İstemci tarafında DOMPurify gibi güvenilir sanitization kütüphanelerinden yararlanın.',
+      'Kullanıcı kontrolündeki verileri doğrudan script ve event handler bağlamına yazmayın.'
+    ]
+  },
+  {
+    id: 'lab-sqli-error-cast',
+    slug: 'error-based-sql-injection-hata-tabanli',
+    title: 'Hata Tabanlı SQL Injection (Error-Based CAST SQLi)',
+    category: 'SQLi (SQL Injection)',
+    difficulty: 'Orta Seviye (Practitioner)',
+    estimatedMinutes: 15,
+    owasp: 'OWASP Top 10 - A03: Injection',
+    metaTitle: 'Hata Tabanlı SQL Injection (Error-Based CAST SQLi) // Siber Güvenlik Dersleri',
+    metaDescription: 'Sunucunun döndürdüğü ayrıntılı veritabanı hata mesajları (CAST / Conversion Error) üzerinden parola ve gizli kayıtları sızdırma laboratuvarı.',
+    nicheKeywords: 'error based sql injection, hata tabanlı sqli laboratuvarı, cast conversion error sqli, sqlite error based injection, veritabanı hata sızıntısı',
+    summary: 'Sorgu çıktısı doğrudan ekrana basılmasa bile, veritabanının fırlattığı tür dönüşümü veya sözdizimi hatalarının içinde gizli verilerin kullanıcıya döndürülmesi zafiyetidir.',
+    objective: 'id parametresine tip uyuşmazlığı hatası üretecek bir SQL ifadesi ekleyerek kilitli sistem kasasındaki gizli bayrağı hata mesajı içinde okuyun.',
+    attackScenario: 'Sistem kasası sorgusunda id parametresi doğrudan SQL ifadesine eklenmektedir. Hatalar try/catch ile gizlenmediği için CAST((SELECT secret FROM ...) AS INTEGER) hatası ekrana dönmektedir.',
+    stages: [
+      { num: 1, title: 'Ayrıntılı Hata Mesajlarını Tetikleme', desc: 'id parametresine tek tırnak veya geçersiz ifade göndererek SQLite hata yanıtı alıp almadığınızı görün.' },
+      { num: 2, title: 'Hata Üreten Fonksiyon Enjeksiyonu', desc: 'Metin veriyi sayıya çevirmeye zorlayan CAST() sorgusunu alt sorgu (subquery) ile birleştirin.' },
+      { num: 3, title: 'Veriyi Hata Mesajından Okuma', desc: 'Veritabanı hatasında beliren secret_name veya flag bilgisini alarak görevi tamamlayın.' }
+    ],
+    payloads: [
+      "1 AND CAST((SELECT secret_name FROM system_secrets LIMIT 1) AS INT)",
+      "1' OR 1=CAST((SELECT sqlite_version()) AS INT)--",
+      "1 UNION SELECT 1, CAST(tbl_name AS INT) FROM sqlite_master--"
+    ],
+    defenses: [
+      'Canlı (production) ortamlarda ayrıntılı veritabanı hata mesajlarının (verbose errors) kullanıcıya gösterilmesini engelleyin.',
+      'Tüm dinamik veritabanı sorgularında Parametreli Sorgular (Prepared Statements) kullanın.',
+      'Web uygulama güvenlik duvarı (WAF) kuralları ile veritabanı hata kalıplarını maskeleyin.'
     ]
   }
 ];
@@ -1175,7 +1264,7 @@ export function generateAll() {
   for (const lab of LAB_PAGES) {
     const labDir = path.resolve(publicDir, 'labs', lab.slug);
     fs.mkdirSync(labDir, { recursive: true });
-    
+
     const html = buildLabHtml(lab);
     fs.writeFileSync(path.resolve(labDir, 'index.html'), html, 'utf-8');
     // Also write lab.slug.html for cleanUrls compatibility

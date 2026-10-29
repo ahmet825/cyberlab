@@ -8,14 +8,14 @@
   <meta name="description" content="SQL Injection, XSS, IDOR, Path Traversal, Host Header Injection ve AI Jailbreak gibi OWASP Top 10 zafiyetlerini kurulumsuz canlı laboratuvarlarda çözün." />
   <meta name="keywords" content="uygulamalı siber güvenlik laboratuvarı, owasp top 10 lab çözümleri, sql injection eğitimi, xss pratik lab, idor zafiyeti, etik hacker eğitimi platformu, ctf laboratuvarı türkçe" />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://siberadam.vercel.app/labs/" />
+  <link rel="canonical" href="https://siberguvenlikdersleri.com/labs/" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://siberadam.vercel.app/labs/" />
+  <meta property="og:url" content="https://siberguvenlikdersleri.com/labs/" />
   <meta property="og:title" content="Uygulamalı Web Güvenliği Laboratuvarları Kataloğu // SiberAdam" />
   <meta property="og:description" content="12 interaktif laboratuvarda canlı HTTP analizi, Burp Repeater simülasyonu ve Web Terminal ile uygulamalı siber güvenlik eğitimi." />
-  <meta property="og:image" content="https://siberadam.vercel.app/story/frame_5_arena.jpg" />
+  <meta property="og:image" content="https://siberguvenlikdersleri.com/story/frame_5_arena.jpg" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -575,6 +575,72 @@
         <div style="display: flex; gap: 8px;">
           <a href="/labs/llm-prompt-injection-ai-jailbreak/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
           <a href="/#/pentest/lab-ai-jailbreak-guardrail" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 13</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Kimlik Doğrulama & Kriptografi (JWT Security)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/jwt-none-algoritmasi-imza-atlatma/">JWT "alg: none" İmza Atlama ve Sahtecilik Zafiyeti</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Sunucuların JWT doğrularken algoritma başlığını (alg) istemciden gelen none değerine güvenerek imzasız tokenları kabul etmesi sonucu oluşan kritik kimlik doğrulama zafiyetidir.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Orta Seviye (Practitioner)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/jwt-none-algoritmasi-imza-atlatma/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-jwt-alg-none" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 14</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">XSS (Cross-Site Scripting)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/dom-xss-json-sink-zafiyeti/">DOM-Based XSS & Güvensiz JSON Ayrıştırma Zafiyeti</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Sunucuya hiç gitmeden, tamamen istemci tarafında JavaScript kodunun URL fragment (#) veya document.location kaynağından aldığı veriyi innerHTML gibi güvensiz bir alıcıya (sink) yazması zafiyetidir.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Orta Seviye (Practitioner)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/dom-xss-json-sink-zafiyeti/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-dom-xss-json" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 15</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">SQLi (SQL Injection)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/error-based-sql-injection-hata-tabanli/">Hata Tabanlı SQL Injection (Error-Based CAST SQLi)</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Sorgu çıktısı doğrudan ekrana basılmasa bile, veritabanının fırlattığı tür dönüşümü veya sözdizimi hatalarının içinde gizli verilerin kullanıcıya döndürülmesi zafiyetidir.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Orta Seviye (Practitioner)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/error-based-sql-injection-hata-tabanli/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-sqli-error-cast" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
         </div>
       </div>
     </div>

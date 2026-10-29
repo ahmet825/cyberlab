@@ -10,8 +10,14 @@ import { AiMentorPanel } from './components/ai/AiMentorPanel';
 import { SettingsModal } from './components/modals/SettingsModal';
 import { LandingPage } from './components/landing/LandingPage';
 import { AuthModal } from './components/modals/AuthModal';
-import { LinuxMachineView } from './components/linux-machine/LinuxMachineView';
-import { LegalView } from './components/legal/LegalView';
+
+const LinuxMachineView = React.lazy(() =>
+  import('./components/linux-machine/LinuxMachineView').then((m) => ({ default: m.LinuxMachineView }))
+);
+const LegalView = React.lazy(() =>
+  import('./components/legal/LegalView').then((m) => ({ default: m.LegalView }))
+);
+
 import { evaluateLabProgress } from './lib/sandbox/progressTracker';
 import {
   CheckCircle2,
@@ -630,25 +636,35 @@ export const App: React.FC = () => {
   // If on Linux learning machine view, render Y's Computer CTF terminal
   if (currentView === 'linux-machine') {
     return (
-      <LinuxMachineView
-        onBackToMain={() => {
-          setCurrentView('landing');
-          window.location.hash = '#/landing';
-        }}
-      />
+      <React.Suspense
+        fallback={
+          <div style={{ background: '#040711', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00ff9d', fontFamily: 'monospace', fontSize: '13px' }}>
+            Debian Linux Terminali &amp; CTF Makinesi Yükleniyor...
+          </div>
+        }
+      >
+        <LinuxMachineView
+          onBackToMain={() => {
+            setCurrentView('landing');
+            window.location.hash = '#/landing';
+          }}
+        />
+      </React.Suspense>
     );
   }
 
   // If on Legal Views (Feragatname & KVKK Aydınlatma Metni)
   if (currentView === 'disclaimer' || currentView === 'kvkk') {
     return (
-      <LegalView
-        initialTab={currentView === 'kvkk' ? 'kvkk' : 'disclaimer'}
-        onBack={() => {
-          setCurrentView('landing');
-          window.location.hash = '#/landing';
-        }}
-      />
+      <React.Suspense fallback={<div style={{ background: '#040711', minHeight: '100vh' }} />}>
+        <LegalView
+          initialTab={currentView === 'kvkk' ? 'kvkk' : 'disclaimer'}
+          onBack={() => {
+            setCurrentView('landing');
+            window.location.hash = '#/landing';
+          }}
+        />
+      </React.Suspense>
     );
   }
 
