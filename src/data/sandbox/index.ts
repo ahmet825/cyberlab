@@ -2,15 +2,18 @@ import type { LabTrack, LabItem } from '../../types/lab';
 import { APPRENTICE_LABS } from './tier1Apprentice';
 import { PRACTITIONER_LABS } from './tier2Practitioner';
 import { EXPERT_LABS } from './tier3Expert';
+import { LLM_LABS } from './tier4Llm';
 
 export { APPRENTICE_LABS } from './tier1Apprentice';
 export { PRACTITIONER_LABS } from './tier2Practitioner';
 export { EXPERT_LABS } from './tier3Expert';
+export { LLM_LABS } from './tier4Llm';
 
 export const ALL_SANDBOX_LABS: LabItem[] = [
   ...APPRENTICE_LABS,
   ...PRACTITIONER_LABS,
-  ...EXPERT_LABS
+  ...EXPERT_LABS,
+  ...LLM_LABS
 ];
 
 export const CURRICULUM_TRACKS: LabTrack[] = [
@@ -34,11 +37,20 @@ export const CURRICULUM_TRACKS: LabTrack[] = [
   },
   {
     id: 'track-deep-exploit',
-    title: 'Bölüm 3 — Protokol İstismarı & Yapay Zeka (Lab 09 - 12)',
-    subtitle: 'Verb Tampering, Host Header, Blind SQLi & AI Jailbreak',
-    description: 'Protokol ve yeni nesil zafiyetler: HTTP metot manipülasyonu, Host başlığı zehirleme, mantıksal kör SQL enjeksiyonu ve LLM Prompt Injection.',
-    icon: 'Bot',
+    title: 'Bölüm 3 — Protokol İstismarı & Web Zafiyetleri (Lab 09 - 11)',
+    subtitle: 'Verb Tampering, Host Header & Blind SQLi',
+    description: 'Protokol ve gelişmiş web zafiyetleri: HTTP metot manipülasyonu, Host başlığı zehirleme ve mantıksal kör SQL enjeksiyonu.',
+    icon: 'Database',
     level: 'İleri Seviye (Expert)',
     labs: EXPERT_LABS
+  },
+  {
+    id: 'track-llm-security',
+    title: 'Bölüm 4 — Yapay Zeka Güvenliği (LLM Security Labs - 6 Lab)',
+    subtitle: 'Prompt Injection, System Prompt Leak, LLM IDOR, Slopsquatting & Jailbreak',
+    description: 'OWASP Top 10 for LLM Applications odaklı yeni nesil yapay zeka zafiyetleri: Çeviri botu ele geçirme, filtre atlatma, müşteri verisi sızıntısı ve jailbreak simülasyonları.',
+    icon: 'Bot',
+    level: 'Başlangıç & İleri Seviye (LLM)',
+    labs: LLM_LABS
   }
 ];

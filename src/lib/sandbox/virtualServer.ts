@@ -20,6 +20,13 @@ import { handleAdmin } from './handlers/adminHandler';
 import { handleVaultFlag, handleVaultLookup } from './handlers/vaultHandler';
 import { handleBlogPost } from './handlers/blogHandler';
 import { handleChat } from './handlers/chatHandler';
+import {
+  handleTranslator,
+  handleHelpBot,
+  handleSecureHelpBot,
+  handleBankaBot,
+  handlePackageAssistant
+} from './handlers/llmLabHandler';
 
 export type { VirtualHttpRequest, VirtualHttpResponse } from './types';
 
@@ -68,8 +75,30 @@ router.all('/post', handleBlogPost);
 // 10. Challenge-11: Error-Based Cast SQLi
 router.all('/api/vault/lookup', handleVaultLookup);
 
-// 11. Challenge-12: LLM System Prompt Leak
-router.all('/chat', handleChat);
+// 11. LLM Security Labs (OWASP Top 10 for LLM)
+router.all('/translate', handleTranslator);
+router.all('/bot/translate', handleTranslator);
+
+router.all('/help', handleHelpBot);
+router.all('/bot/help', handleHelpBot);
+
+router.all('/secure-help', handleSecureHelpBot);
+router.all('/bot/secure-help', handleSecureHelpBot);
+
+router.all('/bank', handleBankaBot);
+router.all('/api/bank/chat', handleBankaBot);
+
+router.all('/packages', handlePackageAssistant);
+router.all('/assistant/packages', handlePackageAssistant);
+
+// 12. Challenge-12 / LLM-06: CyberGuard AI System Prompt Leak & Jailbreak
+router.all('/chat', (ctx) => {
+  // If request comes from bank assistant context
+  if (ctx.headers['host']?.includes('bank') || ctx.path.includes('bank') || ctx.req.body?.includes('query')) {
+    return handleBankaBot(ctx);
+  }
+  return handleChat(ctx);
+});
 router.all('/api/v1/support/chat', handleChat);
 
 /**

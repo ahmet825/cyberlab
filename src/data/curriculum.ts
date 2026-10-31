@@ -8,5 +8,6 @@ export {
   ALL_SANDBOX_LABS,
   APPRENTICE_LABS,
   PRACTITIONER_LABS,
-  EXPERT_LABS
+  EXPERT_LABS,
+  LLM_LABS
 } from './sandbox';

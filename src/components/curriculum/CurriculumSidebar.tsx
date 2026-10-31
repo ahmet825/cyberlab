@@ -55,6 +55,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
     'track-client-state': true,
     'track-vault-auth': true,
     'track-deep-exploit': true,
+    'track-llm-security': true,
     'track-recon': true,
     'track-xss': true,
     'track-sqli': true,
@@ -83,8 +84,10 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   };
 
   const currentHintLevel = unlockedHints[currentLab.id] || 1;
-  const currentLabIndex = allLabs.findIndex((l) => l.id === currentLab.id);
-  const prevLabInChain = currentLabIndex > 0 ? allLabs[currentLabIndex - 1] : null;
+  const currentTrack = CURRICULUM_TRACKS.find((t) => t.labs.some((l) => l.id === currentLab.id));
+  const trackLabs = currentTrack?.labs || allLabs;
+  const indexInTrack = trackLabs.findIndex((l) => l.id === currentLab.id);
+  const prevLabInChain = indexInTrack > 0 ? trackLabs[indexInTrack - 1] : null;
   const isCurrentSequentialLocked = prevLabInChain !== null && !solvedLabIds.has(prevLabInChain.id);
 
   const unlockNextHint = () => {
@@ -532,7 +535,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                 }}>
                   <Lock size={14} color="#ff3366" style={{ flexShrink: 0 }} />
                   <span style={{ fontSize: '11px', color: '#fca5a5', lineHeight: 1.4 }}>
-                    Bu görev kilitlidir. Açmak için ortadaki ekrana <strong>Challenge #{currentLabIndex}</strong> bayrağını (FLAG) girin.
+                    Bu görev kilitlidir. Açmak için ortadaki ekrana <strong>Challenge #{indexInTrack}</strong> bayrağını (FLAG) girin.
                   </span>
                 </div>
               )}

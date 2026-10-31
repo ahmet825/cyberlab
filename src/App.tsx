@@ -630,6 +630,12 @@ export const App: React.FC = () => {
     );
   }
 
+  const isLlmActive = currentLab.trackId === 'track-llm-security';
+  const webLabs = allLabs.filter((l) => l.trackId !== 'track-llm-security');
+  const llmLabs = allLabs.filter((l) => l.trackId === 'track-llm-security');
+  const activeCategoryLabs = isLlmActive ? llmLabs : webLabs;
+  const activeCategoryIndex = activeCategoryLabs.findIndex((l) => l.id === currentLab.id);
+
   return (
     <div className="app-container" style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div className="cyber-bg" />
@@ -779,12 +785,92 @@ export const App: React.FC = () => {
               </span>
             </div>
 
+            {/* Main Sections Navigation Pills */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', paddingRight: '8px', borderRight: '1px solid var(--border-subtle)' }}>
+              <button
+                onClick={() => {
+                  const firstPentest = allLabs.find((l) => l.trackId !== 'track-llm-security') || allLabs[0];
+                  handleSelectLab(firstPentest);
+                }}
+                style={{
+                  background: !isLlmActive ? 'rgba(0, 240, 255, 0.16)' : 'transparent',
+                  border: `1px solid ${!isLlmActive ? 'var(--accent-cyan)' : 'var(--border-subtle)'}`,
+                  color: !isLlmActive ? 'var(--accent-cyan)' : 'var(--text-muted)',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Web Pentest Laboratuvarları (11 Challenge)"
+              >
+                <span>🌐 Pentest Labs ({webLabs.length})</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  const firstLlm = allLabs.find((l) => l.trackId === 'track-llm-security');
+                  if (firstLlm) handleSelectLab(firstLlm);
+                }}
+                style={{
+                  background: isLlmActive ? 'rgba(168, 85, 247, 0.22)' : 'transparent',
+                  border: `1px solid ${isLlmActive ? 'var(--accent-purple)' : 'var(--border-subtle)'}`,
+                  color: isLlmActive ? '#c084fc' : 'var(--text-muted)',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Yapay Zeka Güvenliği Laboratuvarları (6 Challenge)"
+              >
+                <span>🤖 LLM Labs ({llmLabs.length})</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setCurrentView('hotel-breach');
+                  window.location.hash = '#/hotel-breach';
+                }}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--text-muted)',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Grand Horizon Express Güvenli Kod İnceleme & Mavi Takım Sınavı"
+              >
+                <span>🏨 Hotel Lab</span>
+              </button>
+            </div>
+
             <div style={{ background: 'var(--bg-darker)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
               <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'var(--text-dim)', textTransform: 'uppercase', display: 'block' }}>
-                SIRA
+                {isLlmActive ? 'LLM' : 'SIRA'}
               </span>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)' }}>
-                Challenge {allLabs.findIndex((l) => l.id === currentLab.id) + 1} / {allLabs.length}
+              <span style={{ fontSize: '11px', fontWeight: 800, color: isLlmActive ? '#c084fc' : 'var(--accent-cyan)', fontFamily: 'var(--font-mono)' }}>
+                {isLlmActive
+                  ? `Lab ${activeCategoryIndex + 1} / ${llmLabs.length}`
+                  : `Challenge ${activeCategoryIndex + 1} / ${webLabs.length}`}
               </span>
             </div>
 
@@ -965,15 +1051,17 @@ export const App: React.FC = () => {
 
           {/* Center Column: Interactive Target Browser & DevTools or Red Team Sequential Lock Gate */}
           {(() => {
-            const currentLabIndex = allLabs.findIndex((l) => l.id === currentLab.id);
-            const prevLab = currentLabIndex > 0 ? allLabs[currentLabIndex - 1] : null;
+            const currentTrack = CURRICULUM_TRACKS.find((t) => t.labs.some((l) => l.id === currentLab.id));
+            const trackLabs = currentTrack?.labs || allLabs;
+            const indexInTrack = trackLabs.findIndex((l) => l.id === currentLab.id);
+            const prevLab = indexInTrack > 0 ? trackLabs[indexInTrack - 1] : null;
             const isSequentialLocked = prevLab !== null && !solvedLabIds.has(prevLab.id);
 
             if (isSequentialLocked && prevLab) {
               return (
                 <PentestLockedGate
                   currentLab={currentLab}
-                  currentLabIndex={currentLabIndex}
+                  currentLabIndex={indexInTrack}
                   prevLab={prevLab}
                   onUnlockWithFlag={(flag) => {
                     if (verifyLabFlag(prevLab.id, flag)) {
@@ -982,7 +1070,7 @@ export const App: React.FC = () => {
                     }
                     return {
                       success: false,
-                      error: `Hatalı bayrak! Bu kilit yalnızca Challenge #${currentLabIndex} (${prevLab.title}) zafiyetinden elde edilen geçerli FLAG ile açılabilir.`
+                      error: `Hatalı bayrak! Bu kilit yalnızca önceki laboratuvardan (${prevLab.title}) elde edilen geçerli FLAG ile açılabilir.`
                     };
                   }}
                   onGoToPrevLab={() => handleSelectLab(prevLab)}

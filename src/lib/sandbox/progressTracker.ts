@@ -275,7 +275,97 @@ export function evaluateLabProgress(
       break;
     }
 
-    // Challenge-12: LLM Prompt Injection
+    // LLM-01: LinguaBot Prompt Injection
+    case 'lab-llm-prompt-injection-ceviri-botu': {
+      if (lowerUrl.includes('translate') || methodUpper === 'POST' || lowerBody.length > 0) {
+        markStage(1);
+      }
+      if (lowerBody.includes('pwned') || lowerBody.includes('boşver') || lowerBody.includes('ignore')) {
+        markStage(1);
+        markStage(2);
+      }
+      if (isSolved || resp.includes('PWNED!')) {
+        markStage(1);
+        markStage(2);
+        markStage(3);
+        isSolved = true;
+      }
+      break;
+    }
+
+    // LLM-02: HelpBot System Prompt Leak 1
+    case 'lab-llm-system-prompt-leak-1': {
+      if (lowerUrl.includes('help') || methodUpper === 'POST') {
+        markStage(1);
+      }
+      if (lowerBody.includes('talimat') || lowerBody.includes('özet') || lowerBody.includes('kurallar')) {
+        markStage(1);
+        markStage(2);
+      }
+      if (isSolved || resp.includes('HelpBot Sistem Talimatları')) {
+        markStage(1);
+        markStage(2);
+        markStage(3);
+        isSolved = true;
+      }
+      break;
+    }
+
+    // LLM-03: HelpBot v2 Filter Bypass
+    case 'lab-llm-system-prompt-leak-2-filter': {
+      if (lowerUrl.includes('secure-help') || lowerBody.includes('flag') || lowerBody.includes('anahtar')) {
+        markStage(1);
+      }
+      if (lowerBody.includes('tire') || lowerBody.includes('harf') || lowerBody.includes('dash')) {
+        markStage(1);
+        markStage(2);
+      }
+      if (isSolved || resp.includes('Filtreyi aşan')) {
+        markStage(1);
+        markStage(2);
+        markStage(3);
+        isSolved = true;
+      }
+      break;
+    }
+
+    // LLM-04: BankaBot Customer Data Leak (LLM IDOR)
+    case 'lab-llm-customer-data-leak': {
+      if (lowerUrl.includes('chat') || lowerBody.includes('1001') || lowerBody.includes('bakiye')) {
+        markStage(1);
+      }
+      if (lowerBody.includes('1002')) {
+        markStage(1);
+        markStage(2);
+      }
+      if (isSolved || resp.includes('Müşteri #1002 Kayıt Dökümü')) {
+        markStage(1);
+        markStage(2);
+        markStage(3);
+        isSolved = true;
+      }
+      break;
+    }
+
+    // LLM-05: Hallucinated Package (Slopsquatting)
+    case 'lab-llm-hallucinated-package': {
+      if (lowerUrl.includes('packages')) {
+        markStage(1);
+      }
+      if (lowerUrl.includes('auth-jwt-express-helper') || lowerBody.includes('auth-jwt-express-helper')) {
+        markStage(1);
+        markStage(2);
+      }
+      if (isSolved || resp.includes('SLOPSQUATTING ÖNLENDİ')) {
+        markStage(1);
+        markStage(2);
+        markStage(3);
+        isSolved = true;
+      }
+      break;
+    }
+
+    // Challenge-12 / LLM-06: CyberGuard AI Jailbreak
     case 'lab-ai-jailbreak-guardrail': {
       if (lowerUrl.includes('/chat') && (methodUpper === 'POST' || lowerBody.length > 0)) {
         markStage(1);
