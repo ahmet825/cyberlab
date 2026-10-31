@@ -83,6 +83,9 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   };
 
   const currentHintLevel = unlockedHints[currentLab.id] || 1;
+  const currentLabIndex = allLabs.findIndex((l) => l.id === currentLab.id);
+  const prevLabInChain = currentLabIndex > 0 ? allLabs[currentLabIndex - 1] : null;
+  const isCurrentSequentialLocked = prevLabInChain !== null && !solvedLabIds.has(prevLabInChain.id);
 
   const unlockNextHint = () => {
     setUnlockedHints((prev) => ({
@@ -353,7 +356,10 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                         const isSolved = solvedLabIds.has(lab.id);
                         const globalIndex = allLabs.findIndex((l) => l.id === lab.id);
                         const isFreeLab = globalIndex >= 0 && globalIndex < 4;
-                        const isLocked = !currentUser && !isFreeLab;
+                        const isAuthLocked = !currentUser && !isFreeLab;
+                        const prevLabInChain = globalIndex > 0 ? allLabs[globalIndex - 1] : null;
+                        const isSequentialLocked = prevLabInChain !== null && !solvedLabIds.has(prevLabInChain.id);
+                        const isLocked = isAuthLocked || isSequentialLocked;
                         const isRecommendedStart = globalIndex === 0 && !isSolved;
                         const isNextTask = lab.id === firstUnsolvedLab.id && !isRecommendedStart && !isLocked;
                         const completedStagesCount = (stageProgress[lab.id] || []).length;
@@ -392,7 +398,7 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                                   fontFamily: 'var(--font-mono)',
                                   fontSize: '10px',
                                   fontWeight: 800,
-                                  color: isSelected ? 'var(--accent-green)' : isLocked ? 'var(--accent-orange)' : 'var(--text-dim)',
+                                  color: isSelected ? 'var(--accent-green)' : isAuthLocked ? 'var(--accent-orange)' : isSequentialLocked ? 'var(--accent-red, #ff3366)' : 'var(--text-dim)',
                                   flexShrink: 0
                                 }}>
                                   #{String(globalIndex + 1).padStart(2, '0')}
@@ -512,6 +518,24 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
                   Hedef URL: {currentLab.startingUrl}
                 </span>
               </div>
+
+              {isCurrentSequentialLocked && (
+                <div style={{
+                  marginTop: '10px',
+                  padding: '8px 10px',
+                  background: 'rgba(255, 51, 102, 0.12)',
+                  border: '1px solid rgba(255, 51, 102, 0.4)',
+                  borderRadius: '5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <Lock size={14} color="#ff3366" style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: '11px', color: '#fca5a5', lineHeight: 1.4 }}>
+                    Bu görev kilitlidir. Açmak için ortadaki ekrana <strong>Challenge #{currentLabIndex}</strong> bayrağını (FLAG) girin.
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Objective Box */}

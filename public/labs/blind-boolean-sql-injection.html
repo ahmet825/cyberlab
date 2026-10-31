@@ -253,6 +253,48 @@
     font-size: 14px;
   }
 
+  /* Progressive Socratic Hints */
+  .sa-hints-section {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sa-hint-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+  .sa-hint-card[open] {
+    border-color: var(--border-accent);
+    background: rgba(10, 16, 28, 0.85);
+  }
+  .sa-hint-summary {
+    padding: 12px 16px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #e2e8f0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.02);
+    user-select: none;
+  }
+  .sa-hint-summary:hover {
+    color: var(--accent-green);
+    background: rgba(0, 255, 157, 0.05);
+  }
+  .sa-hint-body {
+    padding: 14px 16px;
+    font-size: 13.5px;
+    color: #cbd5e1;
+    border-top: 1px solid var(--border-subtle);
+    line-height: 1.6;
+  }
+
   /* Sidebar Widget */
   .sa-widget {
     background: var(--bg-card);
@@ -344,8 +386,7 @@
         </a>
         <nav class="sa-nav">
           <a href="/" class="">Ana Sayfa</a>
-          <a href="/labs/" class="active">Laboratuvarlar (12)</a>
-          <a href="/linux/hedef-istasyon-debian-terminal/" class="">Linux CTF</a>
+          <a href="/labs/" class="active">Laboratuvarlar</a>
           <a href="/#arena" class="sa-btn-primary">Arena'yı Başlat ⚡</a>
         </nav>
       </div>
@@ -421,12 +462,22 @@
   
         </div>
 
+        
         <h2>Örnek Payload ve İstismar Kalıpları</h2>
-        <pre><code>&#39; AND 1=1--</code>
+        <details class="sa-hint-card" style="margin-bottom: 20px;">
+          <summary class="sa-hint-summary">
+            <span>🔓 Örnek İstismar Yüklerini &amp; Payload Kalıplarını Göster</span>
+            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-cyan);">Genişlet ▼</span>
+          </summary>
+          <div class="sa-hint-body">
+            <pre style="margin: 0;"><code>&#39; AND 1=1--</code>
 <code>&#39; AND 1=2--</code>
 <code>&#39; AND SUBSTR((SELECT flag FROM vault),1,1)=&#39;F&#39;--</code>
 <code>&#39; AND ASCII(SUBSTR((SELECT flag FROM vault),1,1))&gt;70--</code>
 </pre>
+          </div>
+        </details>
+  
 
         <h2>Güvenli Kodlama ve Savunma Mekanizmaları</h2>
         <div class="sa-defense-box">
@@ -452,6 +503,7 @@
             <li style="color: #94a3b8;">Süre: <strong style="color: #fff;">25 Dk</strong></li>
             <li style="color: #94a3b8;">Standart: <strong style="color: var(--accent-green);">OWASP Top 10 - A03: Injection</strong></li>
             <li style="color: #94a3b8;">Ortam: <strong style="color: #fff;">Tarayıcı WASM</strong></li>
+            
           </ul>
         </div>
 
@@ -459,6 +511,13 @@
           <h4>İlgili Laboratuvarlar</h4>
           <ul class="sa-widget-list">
             
+    <li>
+      <a href="/labs/hotel-sistemi-express-zafiyet-analizi/" style="display: block;">
+        <span style="color: #cbd5e1; font-weight: 600;">Hotel Sistemi Express Zafiyet Analizi & Mavi Takım Sınavı (Premium)</span>
+        <span style="display: block; font-size: 11px; color: #64748b; font-family: var(--font-mono);">Mavi Takım (Secure Code Review & API Security)</span>
+      </a>
+    </li>
+  
     <li>
       <a href="/labs/reflected-xss-arama-zafiyeti/" style="display: block;">
         <span style="color: #cbd5e1; font-weight: 600;">Reflected XSS Arama Zafiyeti & Çözümü</span>
@@ -484,13 +543,6 @@
       <a href="/labs/robots-txt-gizli-dizin-kesfi/" style="display: block;">
         <span style="color: #cbd5e1; font-weight: 600;">robots.txt ve Gizli Dizin Keşfi (Reconnaissance)</span>
         <span style="display: block; font-size: 11px; color: #64748b; font-family: var(--font-mono);">Keşif & Bilgi İfşası (Recon)</span>
-      </a>
-    </li>
-  
-    <li>
-      <a href="/labs/cookie-tampering-yetki-yukseltme/" style="display: block;">
-        <span style="color: #cbd5e1; font-weight: 600;">Çerez Sahteciliği (Cookie Tampering) ile Yetki Yükseltme</span>
-        <span style="display: block; font-size: 11px; color: #64748b; font-family: var(--font-mono);">Yetkilendirme & Çerez Güvenliği</span>
       </a>
     </li>
   
@@ -525,8 +577,7 @@
             <h4 style="color: #fff; font-size: 14px; margin-bottom: 12px; font-weight: 700;">Hızlı Bağlantılar</h4>
             <ul class="sa-footer-links">
               <li><a href="/">Ana Sayfa & Hikaye</a></li>
-              <li><a href="/labs/">Laboratuvar Kataloğu</a></li>
-              <li><a href="/linux/hedef-istasyon-debian-terminal/">Linux Öğrenme Makinesi</a></li>
+              <li><a href="/labs/">Tüm Laboratuvarlar</a></li>
               <li><a href="/#arena">Etkileşimli Pentest Arenası</a></li>
             </ul>
           </div>

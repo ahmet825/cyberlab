@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "node server/hotel-server.js",
+    "hotel:server": "node server/hotel-server.js",
     "generate:seo": "node scripts/generateSeoPages.js",
     "build": "node scripts/generateSeoPages.js && tsc -b && vite build",
     "lint": "oxlint",
@@ -13,6 +15,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
     "canvas-confetti": "^1.9.4",
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
     "lucide-react": "^1.61.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

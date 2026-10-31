@@ -2,7 +2,7 @@ export type DifficultyLevel = 'Apprentice' | 'Practitioner' | 'Expert';
 
 export type VulnerabilityCategory = 'Recon' | 'XSS' | 'SQLi' | 'Auth' | 'AI-Workflow';
 
-export type HubView = 'landing' | 'arena' | 'tracks' | 'profile' | 'arsenal' | 'linux-machine' | 'disclaimer' | 'kvkk';
+export type HubView = 'landing' | 'arena' | 'tracks' | 'profile' | 'arsenal' | 'disclaimer' | 'kvkk' | 'hotel-breach';
 
 export interface LabHint {
   level: number;

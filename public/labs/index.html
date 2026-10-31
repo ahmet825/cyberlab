@@ -244,6 +244,48 @@
     font-size: 14px;
   }
 
+  /* Progressive Socratic Hints */
+  .sa-hints-section {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sa-hint-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+  .sa-hint-card[open] {
+    border-color: var(--border-accent);
+    background: rgba(10, 16, 28, 0.85);
+  }
+  .sa-hint-summary {
+    padding: 12px 16px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #e2e8f0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.02);
+    user-select: none;
+  }
+  .sa-hint-summary:hover {
+    color: var(--accent-green);
+    background: rgba(0, 255, 157, 0.05);
+  }
+  .sa-hint-body {
+    padding: 14px 16px;
+    font-size: 13.5px;
+    color: #cbd5e1;
+    border-top: 1px solid var(--border-subtle);
+    line-height: 1.6;
+  }
+
   /* Sidebar Widget */
   .sa-widget {
     background: var(--bg-card);
@@ -295,8 +337,7 @@
         </a>
         <nav class="sa-nav">
           <a href="/" class="">Ana Sayfa</a>
-          <a href="/labs/" class="active">Laboratuvarlar (12)</a>
-          <a href="/linux/hedef-istasyon-debian-terminal/" class="">Linux CTF</a>
+          <a href="/labs/" class="active">Laboratuvarlar</a>
           <a href="/#arena" class="sa-btn-primary">Arena'yı Başlat ⚡</a>
         </nav>
       </div>
@@ -305,8 +346,8 @@
 
   <main class="sa-container" style="padding-top: 30px; padding-bottom: 50px;">
     <div style="text-align: center; max-width: 760px; margin: 0 auto 40px;">
-      <span class="sa-badge sa-badge-diff" style="margin-bottom: 12px; display: inline-block;">12 KUSURLU LABORATUVAR & CANLI SİMÜLASYON</span>
-      <h1 style="font-size: 32px; margin-bottom: 12px;">Uygulamalı Zafiyet Analizi & CTF Kataloğu</h1>
+      <span class="sa-badge sa-badge-diff" style="margin-bottom: 12px; display: inline-block;">21 KUSURLU LABORATUVAR &amp; CANLI SİMÜLASYON</span>
+      <h1 style="font-size: 32px; margin-bottom: 12px;">Uygulamalı Zafiyet Analizi &amp; CTF Kataloğu</h1>
       <p style="font-size: 15px; color: #94a3b8;">
         Sanal makine kurmadan, tarayıcınızda doğrudan gerçek HTTP isteklerini manipüle edin, 
         veritabanı sorgularını kırın ve bayrakları yakalayarak etik hackerlık reflekslerinizi geliştirin.
@@ -319,6 +360,28 @@
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
           <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 01</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Mavi Takım (Secure Code Review & API Security)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/hotel-sistemi-express-zafiyet-analizi/">Hotel Sistemi Express Zafiyet Analizi & Mavi Takım Sınavı (Premium)</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Grand Horizon Oteli rezervasyon ve müdür yönetim API’sindeki BOLA/IDOR, Mass Assignment ve yetki aşımı zafiyetlerini Express kaynak kodunu okuyarak teşhis etme ve güvenli hale getirme simülasyonudur.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">İleri Seviye (Premium VIP)</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/hotel-sistemi-express-zafiyet-analizi/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-hotel-breach-express" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 02</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">XSS (Cross-Site Scripting)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -340,7 +403,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 02</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 03</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">SQLi (SQL Injection)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -362,7 +425,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 03</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 04</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">SQLi (SQL Injection)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -384,7 +447,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 04</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 05</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Keşif & Bilgi İfşası (Recon)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -406,7 +469,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 05</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 06</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Yetkilendirme & Çerez Güvenliği</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -428,7 +491,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 06</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 07</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Erişim Denetimi (IDOR / BOLA)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -450,7 +513,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 07</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 08</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">XSS (Kalıcı Zafiyetler)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -472,7 +535,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 08</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 09</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Dosya Güvenliği (LFI / Path Traversal)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -494,7 +557,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 09</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 10</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Protokol İstismarı (HTTP Metotları)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -516,7 +579,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 10</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 11</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Protokol İstismarı (Host Header)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -538,7 +601,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 11</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 12</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">SQLi (İleri Düzey Kör Enjeksiyon)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -560,7 +623,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 12</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 13</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Yapay Zeka Güvenliği (LLM Security)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -582,7 +645,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 13</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 14</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Kimlik Doğrulama & Kriptografi (JWT Security)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -604,7 +667,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 14</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 15</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">XSS (Cross-Site Scripting)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -626,7 +689,7 @@
     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       <div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 15</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 16</span>
           <span class="sa-badge sa-badge-cat" style="font-size: 10px;">SQLi (SQL Injection)</span>
         </div>
         <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
@@ -641,6 +704,116 @@
         <div style="display: flex; gap: 8px;">
           <a href="/labs/error-based-sql-injection-hata-tabanli/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
           <a href="/#/pentest/lab-sqli-error-cast" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 17</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Yapay Zeka Güvenliği (LLM Security)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/llm-prompt-injection-ceviri-botu/">Prompt Injection Başlangıç: Çeviri Botunu Ele Geçirme // SiberAdam</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          LinguaBot, "kullanıcının yazdığı metni İngilizceye çevir" talimatıyla çalışan bir çeviri asistanıdır. Modelin kullanıcı girdisini veri yerine komut gibi algılamasından kaynaklanan doğrudan prompt injection zafiyetini inceleyin.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Başlangıç</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/llm-prompt-injection-ceviri-botu/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-llm-prompt-injection-ceviri-botu" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 18</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Yapay Zeka Güvenliği (LLM Security)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/system-prompt-sizintisi-seviye-1/">System Prompt Sızıntısı Seviye 1: Gizli Talimatı Ortaya Çıkarın // SiberAdam</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          HelpBot asistanının sistem talimatlarında yer alan gizli bayrağı filtresiz modelden sızdırma ve sırların neden prompta konmaması gerektiğini gösteren uygulamalı laboratuvar.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Başlangıç</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/system-prompt-sizintisi-seviye-1/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-llm-system-prompt-leak-1" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 19</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Yapay Zeka Güvenliği (LLM Security)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/system-prompt-sizintisi-seviye-2-filtre/">System Prompt Sızıntısı Seviye 2: Kelime Filtresini Aşın // SiberAdam</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Seviye 1'deki sızıntıyı kapatmak için eklenen anahtar kelime kara listesini kodlama, heceleme ve harf ayırma taktikleriyle atlatma laboratuvarıdır.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Başlangıç</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/system-prompt-sizintisi-seviye-2-filtre/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-llm-system-prompt-leak-2-filter" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 20</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Yapay Zeka Güvenliği (LLM Security)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/llm-musteri-verisi-sizintisi/">Yapay Zekâ Asistanında Müşteri Verisi Sızıntısı // SiberAdam</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          BankaBot asistanının bağlamına birden çok müşterinin verisini yüklemesi ve erişim denetimini yalnızca prompt kuralına bırakması sonucu oluşan veri sızıntısı laboratuvarı.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Başlangıç</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/llm-musteri-verisi-sizintisi/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-llm-customer-data-leak" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
+        </div>
+      </div>
+    </div>
+  
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-green); font-weight: 700;">Challenge 21</span>
+          <span class="sa-badge sa-badge-cat" style="font-size: 10px;">Yapay Zeka Güvenliği (Mavi Takım)</span>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px; color: #fff;">
+          <a href="/labs/llm-halusinasyon-paket-onerisi/">Halüsinasyonlu Paket Önerisi: Var Olmayan Kütüphaneyi Yakalayın // SiberAdam</a>
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+          Kod asistanının kimlik doğrulama çözümü için önerdiği 5 paketten var olmayan hayali paketi simüle depoda tespit ederek slopsquatting tedarik zinciri saldırılarını önleme laboratuvarı.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 12px; margin-top: auto;">
+        <span style="font-size: 11px; color: #64748b; font-family: var(--font-mono);">Başlangıç</span>
+        <div style="display: flex; gap: 8px;">
+          <a href="/labs/llm-halusinasyon-paket-onerisi/" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Detaylar →</a>
+          <a href="/#/pentest/lab-llm-hallucinated-package" class="sa-btn-primary" style="padding: 4px 10px; font-size: 11px;">Çöz ⚡</a>
         </div>
       </div>
     </div>
@@ -665,8 +838,7 @@
             <h4 style="color: #fff; font-size: 14px; margin-bottom: 12px; font-weight: 700;">Hızlı Bağlantılar</h4>
             <ul class="sa-footer-links">
               <li><a href="/">Ana Sayfa & Hikaye</a></li>
-              <li><a href="/labs/">Laboratuvar Kataloğu</a></li>
-              <li><a href="/linux/hedef-istasyon-debian-terminal/">Linux Öğrenme Makinesi</a></li>
+              <li><a href="/labs/">Tüm Laboratuvarlar</a></li>
               <li><a href="/#arena">Etkileşimli Pentest Arenası</a></li>
             </ul>
           </div>

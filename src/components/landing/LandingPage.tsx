@@ -19,7 +19,6 @@ import {
   Lock
 } from 'lucide-react';
 import { CURRICULUM_TRACKS } from '../../data/curriculum';
-import { INITIAL_MISSIONS } from '../linux-machine/missionsData';
 import type { LabItem, HubView } from '../../types/lab';
 import type { UserProfile } from '../../types/user';
 
@@ -38,7 +37,13 @@ const LAB_SLUG_MAP: Record<string, string> = {
   'lab-ai-jailbreak-guardrail': 'llm-prompt-injection-ai-jailbreak',
   'lab-jwt-alg-none': 'jwt-none-algoritmasi-imza-atlatma',
   'lab-dom-xss-json': 'dom-xss-json-sink-zafiyeti',
-  'lab-sqli-error-cast': 'error-based-sql-injection-hata-tabanli'
+  'lab-sqli-error-cast': 'error-based-sql-injection-hata-tabanli',
+  'lab-hotel-breach-express': 'hotel-sistemi-express-zafiyet-analizi',
+  'lab-llm-prompt-injection-ceviri-botu': 'llm-prompt-injection-ceviri-botu',
+  'lab-llm-system-prompt-leak-1': 'system-prompt-sizintisi-seviye-1',
+  'lab-llm-system-prompt-leak-2-filter': 'system-prompt-sizintisi-seviye-2-filtre',
+  'lab-llm-customer-data-leak': 'llm-musteri-verisi-sizintisi',
+  'lab-llm-hallucinated-package': 'llm-halusinasyon-paket-onerisi'
 };
 
 interface StoryFrame {
@@ -241,12 +246,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   // Smooth left drawer state (approached from left edge)
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState(false);
-  const [leftCategoryTab, setLeftCategoryTab] = useState<'pentest' | 'linux'>('pentest');
+  const [leftCategoryTab, setLeftCategoryTab] = useState<'pentest' | 'hotel'>('pentest');
 
   // Bottom curriculum sheet state (for clicked lab)
   const [selectedCurriculumLab, setSelectedCurriculumLab] = useState<
     | { type: 'pentest'; lab: LabItem }
-    | { type: 'linux'; mission: typeof INITIAL_MISSIONS[0] }
+    | { type: 'hotel'; scenario?: 'api' | 'file-upload' }
     | null
   >(null);
   const [copiedSlug, setCopiedSlug] = useState(false);
@@ -256,7 +261,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     const url =
       selectedCurriculumLab.type === 'pentest'
         ? `${window.location.origin}${window.location.pathname}#/pentest/${selectedCurriculumLab.lab.id}`
-        : `${window.location.origin}${window.location.pathname}#/linux`;
+        : `${window.location.origin}${window.location.pathname}#/hotel`;
     navigator.clipboard.writeText(url);
     setCopiedSlug(true);
     setTimeout(() => setCopiedSlug(false), 2000);
@@ -385,6 +390,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           gap: '10px'
         }}
       >
+        <button
+          onClick={() => {
+            _onNavigateView('hotel-breach');
+          }}
+          style={{
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.15) 100%)',
+            border: '1px solid #f59e0b',
+            color: '#fbbf24',
+            padding: '7px 12px',
+            borderRadius: '6px',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '11px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: '0 0 15px rgba(245, 158, 11, 0.25)',
+            transition: 'all 0.2s ease'
+          }}
+          title="HOTEL SİSTEMİ TEHLİKE ALTINDA: Mavi Takım Güvenli Kod İnceleme & API Zafiyet Simülasyonu (Premium VIP)"
+        >
+          <span style={{ fontSize: '13px' }}>👑</span>
+          <span>Mavi Takım: Hotel Lab (Premium)</span>
+        </button>
         {currentUser ? (
           <div
             style={{
@@ -469,7 +499,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           transform: 'translateY(-50%)',
           zIndex: 70,
           background: 'rgba(8, 13, 24, 0.95)',
-          border: '1px solid rgba(0, 255, 157, 0.35)',
+          border: `1px solid ${currentFrame.themeColor}`,
           borderLeft: isLeftDrawerOpen ? undefined : 'none',
           borderTopRightRadius: '8px',
           borderBottomRightRadius: '8px',
@@ -479,9 +509,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           fontFamily: 'var(--font-mono)',
           fontSize: '11px',
           fontWeight: 800,
-          color: '#00ff9d',
+          color: currentFrame.themeColor,
           backdropFilter: 'blur(16px)',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(0, 255, 157, 0.2)',
+          boxShadow: `0 4px 20px rgba(0, 0, 0, 0.6), 0 0 14px ${currentFrame.bgGlow}`,
           transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
           display: 'flex',
           alignItems: 'center',
@@ -490,7 +520,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         }}
         title="Lab ve Sistem Listesini Aç / Kapat"
       >
-        <span>{isLeftDrawerOpen ? '◀ MENÜYÜ GİZLE' : '▶ LABLAR: PENTEST & LİNUX'}</span>
+        <span>{isLeftDrawerOpen ? '◀ MENÜYÜ GİZLE' : '▶ LABLAR: 🔴 KIRMIZI & 🔵 MAVİ TAKIM'}</span>
       </div>
 
       {/* 2. Sol Çekmece (Smooth Slide-In Drawer - KÜÇÜK RESİM YOK) */}
@@ -507,22 +537,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           transform: isLeftDrawerOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
           background: 'rgba(6, 10, 18, 0.96)',
-          borderRight: '1px solid rgba(0, 255, 157, 0.25)',
+          borderRight: `2px solid ${currentFrame.themeColor}`,
           backdropFilter: 'blur(24px)',
           display: 'flex',
           flexDirection: 'column',
           padding: '18px 14px',
           gap: '12px',
-          boxShadow: '12px 0 35px rgba(0, 0, 0, 0.85)',
+          boxShadow: `12px 0 35px rgba(0, 0, 0, 0.85), 4px 0 25px ${currentFrame.bgGlow}`,
           overflow: 'hidden'
         }}
       >
         {/* Header: Brand & Close */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Layers size={16} color="#00ff9d" />
+            <Layers size={16} color={currentFrame.themeColor} />
             <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '13px', color: '#fff', letterSpacing: '0.5px' }}>
-              SİBERADAM // <span style={{ color: '#00ff9d' }}>LABLAR</span>
+              SİBERADAM // <span style={{ color: currentFrame.themeColor }}>LABORATUVARLAR</span>
             </span>
           </div>
 
@@ -540,14 +570,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </button>
         </div>
 
-        {/* Category Switcher Tabs: Pentest vs Linux */}
+        {/* Category Switcher Tabs: Pentest (Kırmızı) vs Hotel (Mavi) */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'rgba(255,255,255,0.04)', borderRadius: '6px', padding: '3px', border: '1px solid rgba(255,255,255,0.08)' }}>
           <button
             onClick={() => setLeftCategoryTab('pentest')}
             style={{
-              background: leftCategoryTab === 'pentest' ? 'rgba(0, 240, 255, 0.15)' : 'transparent',
-              border: `1px solid ${leftCategoryTab === 'pentest' ? 'var(--accent-cyan)' : 'transparent'}`,
-              color: leftCategoryTab === 'pentest' ? '#00f0ff' : '#94a3b8',
+              background: leftCategoryTab === 'pentest' ? 'rgba(239, 68, 68, 0.18)' : 'transparent',
+              border: `1px solid ${leftCategoryTab === 'pentest' ? '#ef4444' : 'transparent'}`,
+              color: leftCategoryTab === 'pentest' ? '#f87171' : '#94a3b8',
               borderRadius: '5px',
               padding: '6px',
               fontSize: '11px',
@@ -561,16 +591,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               transition: 'all 0.2s ease'
             }}
           >
-            <Shield size={12} />
-            <span>PENTEST ({currentUser ? '12 Aktif' : '12 Lab'})</span>
+            <Shield size={12} color={leftCategoryTab === 'pentest' ? '#ef4444' : '#94a3b8'} />
+            <span>🔴 KIRMIZI (12 Lab)</span>
           </button>
 
           <button
-            onClick={() => setLeftCategoryTab('linux')}
+            onClick={() => setLeftCategoryTab('hotel')}
             style={{
-              background: leftCategoryTab === 'linux' ? 'rgba(0, 255, 157, 0.15)' : 'transparent',
-              border: `1px solid ${leftCategoryTab === 'linux' ? 'var(--accent-green)' : 'transparent'}`,
-              color: leftCategoryTab === 'linux' ? '#00ff9d' : '#94a3b8',
+              background: leftCategoryTab === 'hotel' ? 'rgba(59, 130, 246, 0.18)' : 'transparent',
+              border: `1px solid ${leftCategoryTab === 'hotel' ? '#3b82f6' : 'transparent'}`,
+              color: leftCategoryTab === 'hotel' ? '#60a5fa' : '#94a3b8',
               borderRadius: '5px',
               padding: '6px',
               fontSize: '11px',
@@ -584,14 +614,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               transition: 'all 0.2s ease'
             }}
           >
-            <TerminalIcon size={12} />
-            <span>LİNUX (10 Görev)</span>
+            <Flame size={12} color={leftCategoryTab === 'hotel' ? '#60a5fa' : '#94a3b8'} />
+            <span>🔵 MAVİ (2 Lab)</span>
           </button>
         </div>
 
         {/* Instruction subheader */}
         <div style={{ fontSize: '10.5px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-          {currentUser ? 'İstediğiniz challenge\'ı seçerek hemen başlatabilirsiniz.' : 'Giriş yaparak tüm 12 laboratuvarı hemen çözebilirsiniz.'}
+          {leftCategoryTab === 'pentest'
+            ? (currentUser ? '🔴 Kırmızı Takım: Saldırı senaryolarını test edin.' : '🔴 Kırmızı Takım: İlk 4 lab herkese açıktır.')
+            : '🔵 Mavi Takım: Kod okuma, API konsolu ve savunma testi.'}
         </div>
 
         {/* Scrollable Lab Items List - NO THUMBNAILS! */}
@@ -621,8 +653,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   style={{
                     textDecoration: 'none',
                     color: 'inherit',
-                    background: isSelected ? 'rgba(0, 240, 255, 0.12)' : isLocked ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.03)',
-                    border: `1px solid ${isSelected ? 'var(--accent-cyan)' : isLocked ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 255, 255, 0.08)'}`,
+                    background: isSelected ? 'rgba(239, 68, 68, 0.15)' : isLocked ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.03)',
+                    border: `1px solid ${isSelected ? '#ef4444' : isLocked ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 255, 255, 0.08)'}`,
                     borderRadius: '6px',
                     padding: '8px 10px',
                     cursor: 'pointer',
@@ -635,15 +667,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: isLocked ? '#64748b' : 'var(--accent-cyan)', fontWeight: 800 }}>
-                        #{String(idx + 1).padStart(2, '0')}
+                      <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: isLocked ? '#64748b' : '#ef4444', fontWeight: 800 }}>
+                        🔴 #{String(idx + 1).padStart(2, '0')}
                       </span>
                       <span style={{
                         fontSize: '9px',
                         padding: '1px 5px',
                         borderRadius: '3px',
-                        background: isLocked ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 240, 255, 0.1)',
-                        color: isLocked ? '#94a3b8' : '#38bdf8',
+                        background: isLocked ? 'rgba(255, 255, 255, 0.05)' : 'rgba(239, 68, 68, 0.12)',
+                        color: isLocked ? '#94a3b8' : '#f87171',
                         fontFamily: 'var(--font-mono)'
                       }}>
                         {lab.category}
@@ -677,56 +709,131 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', fontSize: '9.5px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
                     <span>{isLocked ? 'Erişmek için Giriş Yapın' : `${lab.stages.length} Aşama Müfredat`}</span>
-                    <span style={{ color: isLocked ? '#94a3b8' : '#00f0ff' }}>İncele ↓</span>
+                    <span style={{ color: isLocked ? '#94a3b8' : '#ef4444' }}>İncele ↓</span>
                   </div>
                 </a>
               );
             })
           ) : (
-            INITIAL_MISSIONS.map((mission, idx) => {
-              const isSelected = selectedCurriculumLab?.type === 'linux' && selectedCurriculumLab.mission.id === mission.id;
+            (() => {
+              const isSelected1 = selectedCurriculumLab?.type === 'hotel' && selectedCurriculumLab.scenario !== 'file-upload';
+              const isSelected2 = selectedCurriculumLab?.type === 'hotel' && selectedCurriculumLab.scenario === 'file-upload';
               return (
-                <a
-                  key={mission.id}
-                  href="/linux/hedef-istasyon-debian-terminal/"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setSelectedCurriculumLab({ type: 'linux', mission });
-                  }}
-                  style={{
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    background: isSelected ? 'rgba(0, 255, 157, 0.12)' : 'rgba(255, 255, 255, 0.03)',
-                    border: `1px solid ${isSelected ? '#00ff9d' : 'rgba(255, 255, 255, 0.08)'}`,
-                    borderRadius: '6px',
-                    padding: '8px 10px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: '#00ff9d', fontWeight: 800 }}>
-                      GÖREV {String(idx + 1).padStart(2, '0')}
-                    </span>
-                    <span style={{ fontSize: '9px', color: '#86efac', fontFamily: 'var(--font-mono)' }}>
-                      CTF Makinesi
-                    </span>
-                  </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {/* Lab #01: API Zafiyetleri */}
+                  <a
+                    href="/labs/hotel-sistemi-express-zafiyet-analizi/"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedCurriculumLab({ type: 'hotel', scenario: 'api' });
+                    }}
+                    style={{
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      background: isSelected1 ? 'rgba(59, 130, 246, 0.18)' : 'rgba(255, 255, 255, 0.03)',
+                      border: `1px solid ${isSelected1 ? '#3b82f6' : 'rgba(59, 130, 246, 0.3)'}`,
+                      borderRadius: '6px',
+                      padding: '10px 12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: '#60a5fa', fontWeight: 800 }}>
+                          🔵 #01
+                        </span>
+                        <span style={{
+                          fontSize: '9px',
+                          padding: '1px 5px',
+                          borderRadius: '3px',
+                          background: 'rgba(59, 130, 246, 0.15)',
+                          color: '#93c5fd',
+                          fontFamily: 'var(--font-mono)'
+                        }}>
+                          MAVİ TAKIM // SAVUNMA
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: '#fbbf24' }}>
+                        Orta Seviye
+                      </span>
+                    </div>
 
-                  <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#f8fafc', lineHeight: '1.3' }}>
-                    {mission.name}
-                  </span>
+                    <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#f8fafc', lineHeight: '1.3' }}>
+                      Grand Horizon Hotel — Express Zafiyet Analizi & Kod İnceleme
+                    </span>
 
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', fontSize: '9.5px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-                    <span>{mission.sectionTitle.split('—')[0]}</span>
-                    <span style={{ color: '#00ff9d' }}>İncele ↓</span>
-                  </div>
-                </a>
+                    <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.4' }}>
+                      Express sunucu kod okuma, API İstek Konsolu, interaktif öğretmen tahtası ve 10 soruluk değerlendirme testi.
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', fontSize: '9.5px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
+                      <span style={{ color: '#60a5fa' }}>IDOR / Broken Auth</span>
+                      <span style={{ color: '#38bdf8' }}>İncele ↓</span>
+                    </div>
+                  </a>
+
+                  {/* Lab #02: Güvenli Dosya Yükleme (File Upload Defense) */}
+                  <a
+                    href="/labs/hotel-sistemi-express-zafiyet-analizi/"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedCurriculumLab({ type: 'hotel', scenario: 'file-upload' });
+                    }}
+                    style={{
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      background: isSelected2 ? 'rgba(0, 255, 157, 0.18)' : 'rgba(255, 255, 255, 0.03)',
+                      border: `1px solid ${isSelected2 ? '#00ff9d' : 'rgba(0, 255, 157, 0.3)'}`,
+                      borderRadius: '6px',
+                      padding: '10px 12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: '#00ff9d', fontWeight: 800 }}>
+                          🔵 #02
+                        </span>
+                        <span style={{
+                          fontSize: '9px',
+                          padding: '1px 5px',
+                          borderRadius: '3px',
+                          background: 'rgba(0, 255, 157, 0.15)',
+                          color: '#86efac',
+                          fontFamily: 'var(--font-mono)'
+                        }}>
+                          MAVİ TAKIM // DOSYA GÜVENLİĞİ
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: '#00ff9d' }}>
+                        4 Adım Savunma
+                      </span>
+                    </div>
+
+                    <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#f8fafc', lineHeight: '1.3' }}>
+                      Grand Horizon Hotel — Güvenli Dosya Yükleme (File Upload)
+                    </span>
+
+                    <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.4' }}>
+                      4 Adım: Auth, Filetype Validation (Magic Bytes), Filesize Validation (DoS) ve JWT ile İmzalama.
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', fontSize: '9.5px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
+                      <span style={{ color: '#00ff9d' }}>4 Kazanım & 10 Soru</span>
+                      <span style={{ color: '#00ff9d' }}>İncele ↓</span>
+                    </div>
+                  </a>
+                </div>
               );
-            })
+            })()
           )}
         </div>
       </nav>
@@ -1275,12 +1382,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           transition: 'transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease',
           opacity: selectedCurriculumLab ? 1 : 0,
           background: 'rgba(6, 10, 18, 0.98)',
-          borderTop: `2px solid ${
-            selectedCurriculumLab?.type === 'pentest' ? '#00f0ff' : '#00ff9d'
-          }`,
-          boxShadow: `0 -15px 40px rgba(0, 0, 0, 0.85), 0 -2px 25px ${
-            selectedCurriculumLab?.type === 'pentest' ? 'rgba(0, 240, 255, 0.25)' : 'rgba(0, 255, 157, 0.25)'
-          }`,
+          borderTop: `2px solid ${currentFrame.themeColor}`,
+          boxShadow: `0 -15px 40px rgba(0, 0, 0, 0.85), 0 -2px 25px ${currentFrame.bgGlow}`,
           backdropFilter: 'blur(24px)',
           display: 'flex',
           flexDirection: 'column',
@@ -1314,26 +1417,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     fontWeight: 800,
                     background:
                       selectedCurriculumLab.type === 'pentest'
-                        ? 'rgba(0, 240, 255, 0.15)'
-                        : 'rgba(0, 255, 157, 0.15)',
+                        ? 'rgba(239, 68, 68, 0.15)'
+                        : 'rgba(59, 130, 246, 0.15)',
                     color:
-                      selectedCurriculumLab.type === 'pentest' ? '#00f0ff' : '#00ff9d',
+                      selectedCurriculumLab.type === 'pentest' ? '#ef4444' : '#60a5fa',
                     border: `1px solid ${
                       selectedCurriculumLab.type === 'pentest'
-                        ? 'rgba(0, 240, 255, 0.4)'
-                        : 'rgba(0, 255, 157, 0.4)'
+                        ? 'rgba(239, 68, 68, 0.4)'
+                        : 'rgba(59, 130, 246, 0.4)'
                     }`
                   }}
                 >
                   {selectedCurriculumLab.type === 'pentest' ? (
                     <>
-                      <Shield size={12} />
-                      PENTEST MÜFREDATI // {selectedCurriculumLab.lab.category}
+                      <Shield size={12} color="#ef4444" />
+                      🔴 KIRMIZI TAKIM // {selectedCurriculumLab.lab.category}
+                    </>
+                  ) : selectedCurriculumLab.scenario === 'file-upload' ? (
+                    <>
+                      <Shield size={12} color="#00ff9d" />
+                      🔵 MAVİ TAKIM // DOSYA YÜKLEME GÜVENLİĞİ
                     </>
                   ) : (
                     <>
-                      <TerminalIcon size={12} />
-                      LİNUX SİSTEMLERİ // CTF MAKİNESİ
+                      <Shield size={12} color="#60a5fa" />
+                      🔵 MAVİ TAKIM // SAVUNMA & KOD ANALİZİ
                     </>
                   )}
                 </span>
@@ -1349,27 +1457,35 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 >
                   {selectedCurriculumLab.type === 'pentest'
                     ? selectedCurriculumLab.lab.title
-                    : selectedCurriculumLab.mission.name}
+                    : selectedCurriculumLab.scenario === 'file-upload'
+                    ? 'Grand Horizon Hotel — Güvenli Dosya Yükleme (File Upload Defense)'
+                    : 'Grand Horizon Hotel — Express Zafiyet Analizi & Kod İnceleme'}
                 </h2>
 
-                {selectedCurriculumLab.type === 'pentest' && (
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      fontFamily: 'var(--font-mono)',
-                      padding: '2px 6px',
-                      borderRadius: '3px',
-                      background: 'rgba(255, 255, 255, 0.06)',
-                      color:
-                        selectedCurriculumLab.lab.difficulty === 'Apprentice'
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontFamily: 'var(--font-mono)',
+                    padding: '2px 6px',
+                    borderRadius: '3px',
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    color:
+                      selectedCurriculumLab.type === 'pentest'
+                        ? (selectedCurriculumLab.lab.difficulty === 'Apprentice'
                           ? '#86efac'
-                          : '#fbbf24',
-                      border: '1px solid rgba(255, 255, 255, 0.1)'
-                    }}
-                  >
-                    {selectedCurriculumLab.lab.difficulty}
-                  </span>
-                )}
+                          : '#fbbf24')
+                        : selectedCurriculumLab.scenario === 'file-upload'
+                        ? '#00ff9d'
+                        : '#fbbf24',
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                  }}
+                >
+                  {selectedCurriculumLab.type === 'pentest'
+                    ? selectedCurriculumLab.lab.difficulty
+                    : selectedCurriculumLab.scenario === 'file-upload'
+                    ? '4 Adım Savunma Mimarisi'
+                    : 'Orta Seviye'}
+                </span>
 
                 {/* SSG URL Copy Button */}
                 <button
@@ -1400,7 +1516,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       ? 'SSG BAĞLANTISI KOPYALANDI! ✓'
                       : selectedCurriculumLab.type === 'pentest'
                       ? `#/pentest/${selectedCurriculumLab.lab.id}`
-                      : `#/linux`}
+                      : `#/hotel`}
                   </span>
                 </button>
               </div>
@@ -1467,14 +1583,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 >
                   {selectedCurriculumLab.type === 'pentest'
                     ? selectedCurriculumLab.lab.description
-                    : selectedCurriculumLab.mission.storySnippet}
+                    : selectedCurriculumLab.scenario === 'file-upload'
+                    ? 'Grand Horizon Hotel misafir belge ve fatura yükleme ucu üzerinde yetkisiz dosya yükleme, web shell RCE ve dosya boyutu DoS zafiyetleri tespit edildi. Mavi takım uzmanı olarak Auth, Filetype Validation (Magic Bytes), Filesize Validation (DoS) ve JWT ile İmzalama mekanizmalarını kurun ve 10 soruluk testi tamamlayın.'
+                    : 'Grand Horizon Hotel rezervasyon altyapısında kritik müşteri ve oda veri sızıntılarına yol açan zafiyetler raporlandı. Mavi takım güvenlik analisti olarak Express kaynak kodlarını satır satır oku, API İstek Konsolu ile zafiyetleri tetikle, Öğretmen Teori Tahtası ile çözüm mimarisini kavra ve 10 soruluk testi başarıyla tamamla.'}
                 </p>
 
                 <div
                   style={{
                     background: 'rgba(0, 0, 0, 0.4)',
                     borderLeft: `3px solid ${
-                      selectedCurriculumLab.type === 'pentest' ? '#00f0ff' : '#00ff9d'
+                      selectedCurriculumLab.type === 'pentest' 
+                        ? '#ef4444' 
+                        : selectedCurriculumLab.scenario === 'file-upload' 
+                        ? '#00ff9d' 
+                        : '#3b82f6'
                     }`,
                     padding: '8px 10px',
                     borderRadius: '0 4px 4px 0',
@@ -1483,12 +1605,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     lineHeight: '1.4'
                   }}
                 >
-                  <strong style={{ color: selectedCurriculumLab.type === 'pentest' ? '#00f0ff' : '#00ff9d' }}>
+                  <strong style={{ color: selectedCurriculumLab.type === 'pentest' ? '#ef4444' : selectedCurriculumLab.scenario === 'file-upload' ? '#00ff9d' : '#60a5fa' }}>
                     Ana Hedef:{' '}
                   </strong>
                   {selectedCurriculumLab.type === 'pentest'
                     ? selectedCurriculumLab.lab.objective
-                    : selectedCurriculumLab.mission.objective}
+                    : selectedCurriculumLab.scenario === 'file-upload'
+                    ? 'Anonim dosya yükleme, web shell RCE ve dosya boyutu DoS açıklarını analiz etmek; 4 adımlı güvenli pipeline (Auth -> Filesize -> Magic Bytes -> JWT İmzalı Depolama) ile kapatmak.'
+                    : 'Müşteri/rezervasyon endpointlerindeki IDOR, SQLi ve Broken Auth zafiyetlerini tespit etmek, API İstek Konsolu ile doğrulamak ve teorik testte en az %80 başarı sağlamak.'}
                 </div>
 
                 {selectedCurriculumLab.type === 'pentest' && selectedCurriculumLab.lab.tags && (
@@ -1529,10 +1653,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <span style={{ fontSize: '10.5px', color: '#64748b', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
                     // MÜFREDAT VE GÖREV ADIMLARI
                   </span>
-                  <span style={{ fontSize: '10px', color: '#00ff9d', fontFamily: 'var(--font-mono)' }}>
+                  <span style={{ fontSize: '10px', color: selectedCurriculumLab.type === 'pentest' ? '#ef4444' : '#60a5fa', fontFamily: 'var(--font-mono)' }}>
                     {selectedCurriculumLab.type === 'pentest'
                       ? `${selectedCurriculumLab.lab.stages.length} Aşamalı İlerleme`
-                      : 'Kavram & Terminal Becerisi'}
+                      : '4 Aşamalı Savunma Eğitimi'}
                   </span>
                 </div>
 
@@ -1557,8 +1681,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                               fontSize: '9.5px',
                               fontFamily: 'var(--font-mono)',
                               fontWeight: 800,
-                              color: '#00f0ff',
-                              background: 'rgba(0, 240, 255, 0.1)',
+                              color: '#ef4444',
+                              background: 'rgba(239, 68, 68, 0.1)',
                               padding: '1px 5px',
                               borderRadius: '3px'
                             }}
@@ -1581,34 +1705,50 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     ))
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div
-                        style={{
-                          background: 'rgba(0, 0, 0, 0.35)',
-                          border: '1px solid rgba(0, 255, 157, 0.2)',
-                          borderRadius: '6px',
-                          padding: '10px 12px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '5px'
-                        }}
-                      >
-                        <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#00ff9d', fontFamily: 'var(--font-mono)' }}>
-                          ÖĞRENİLECEK TEMEL KAVRAM
+                      {(selectedCurriculumLab.scenario === 'file-upload' ? [
+                        { title: 'Adım 1: Auth (Kimlik Doğrulama) Kontrolü', desc: 'Anonim dosya yükleme açığını analiz edin; JWT Bearer doğrulaması ile yetkisiz istekleri engelleyin.' },
+                        { title: 'Adım 2: Filetype Validation (MIME & Magic Bytes)', desc: 'Sahte Content-Type ile gelen PHP web shell saldırılarını Magic Bytes ve uzantı Allowlist ile durdurun.' },
+                        { title: 'Adım 3: Filesize Validation (DoS & Depolama Koruma)', desc: '500 MB boyutundaki çöp dosya yüklemelerini Multer 2MB sınırı ile keserek sunucuyu koruyun.' },
+                        { title: 'Adım 4: JWT İmzalama & Güvenli Depolama', desc: 'Dosyaları rastgele UUID ile web kökü dışına kaydedip 15 dk geçerli JWT imzalı indirme linki üretin.' }
+                      ] : [
+                        { title: 'Aşama 1: Express Kaynak Kod Okuma', desc: 'Müşteri, rezervasyon ve müdür rotalarını inceleyerek zafiyetli kod satırlarını tespit edin.' },
+                        { title: 'Aşama 2: API İstek Konsolu', desc: 'Canlı Express sunucusuna parametrelerle istek atıp sızıntıları uygulamalı teyit edin.' },
+                        { title: 'Aşama 3: Öğretmen Teori Tahtası', desc: 'Görsel mimari şemaları ve zafiyet giderme (fix) yöntemlerini tahta üzerinde öğrenin.' },
+                        { title: 'Aşama 4: 10 Soruluk Değerlendirme Testi', desc: 'Çoktan seçmeli savunma testini tamamlayarak Başarılı / Başarısız karnenizi alın.' }
+                      ]).map((step, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            background: 'rgba(0, 0, 0, 0.35)',
+                            border: `1px solid ${selectedCurriculumLab.scenario === 'file-upload' ? 'rgba(0, 255, 157, 0.2)' : 'rgba(59, 130, 246, 0.2)'}`,
+                            borderRadius: '6px',
+                            padding: '8px 10px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '3px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{
+                              fontSize: '9.5px',
+                              fontFamily: 'var(--font-mono)',
+                              fontWeight: 800,
+                              color: selectedCurriculumLab.scenario === 'file-upload' ? '#00ff9d' : '#60a5fa',
+                              background: selectedCurriculumLab.scenario === 'file-upload' ? 'rgba(0, 255, 157, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                              padding: '1px 5px',
+                              borderRadius: '3px'
+                            }}>
+                              ADIM {idx + 1}
+                            </span>
+                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#f8fafc' }}>
+                              {step.title}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
+                            {step.desc}
+                          </div>
                         </div>
-                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#f8fafc' }}>
-                          {selectedCurriculumLab.mission.learnedConcept}
-                        </div>
-                        <div style={{ fontSize: '11.5px', color: '#94a3b8', lineHeight: '1.4', marginTop: '4px' }}>
-                          {selectedCurriculumLab.mission.conceptSummary}
-                        </div>
-                      </div>
-
-                      <div style={{ fontSize: '10.5px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-                        İlgili Dosyalar:{' '}
-                        <span style={{ color: '#cbd5e1' }}>
-                          {selectedCurriculumLab.mission.relatedFiles.join(', ')}
-                        </span>
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -1638,15 +1778,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       <strong style={{ color: '#f8fafc' }}>SiberAdam</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Sunucu Masrafı:</span>
-                      <strong style={{ color: '#00ff9d' }}>0 TL / Client WASM</strong>
+                      <span>Takım:</span>
+                      <strong style={{ color: selectedCurriculumLab.type === 'pentest' ? '#ef4444' : '#60a5fa' }}>
+                        {selectedCurriculumLab.type === 'pentest' ? '🔴 Kırmızı Takım' : '🔵 Mavi Takım'}
+                      </strong>
                     </div>
-                    {selectedCurriculumLab.type === 'pentest' && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Tahmini Süre:</span>
-                        <strong style={{ color: '#f8fafc' }}>{selectedCurriculumLab.lab.estimatedMinutes} dk</strong>
-                      </div>
-                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Tahmini Süre:</span>
+                      <strong style={{ color: '#f8fafc' }}>
+                        {selectedCurriculumLab.type === 'pentest' ? `${selectedCurriculumLab.lab.estimatedMinutes} dk` : '35 dk'}
+                      </strong>
+                    </div>
                   </div>
                 </div>
 
@@ -1658,8 +1800,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         style={{
                           width: '100%',
                           padding: '12px 14px',
-                          background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(0, 255, 157, 0.25))',
-                          border: '1px solid var(--accent-cyan)',
+                          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(185, 28, 28, 0.2))',
+                          border: '1px solid #ef4444',
                           borderRadius: '6px',
                           color: '#ffffff',
                           fontSize: '12px',
@@ -1670,12 +1812,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                           alignItems: 'center',
                           justifyContent: 'center',
                           gap: '8px',
-                          boxShadow: '0 0 20px rgba(0, 240, 255, 0.3)',
+                          boxShadow: '0 0 20px rgba(239, 68, 68, 0.35)',
                           transition: 'all 0.2s ease'
                         }}
                       >
-                        <Shield size={14} color="#00f0ff" />
-                        <span>LABA BAŞLA ↗</span>
+                        <Shield size={14} color="#ef4444" />
+                        <span>🔴 LABA BAŞLA ↗</span>
                       </button>
                     ) : (
                       <button
@@ -1683,7 +1825,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         style={{
                           width: '100%',
                           padding: '12px 14px',
-                          background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(0, 240, 255, 0.15))',
+                          background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(239, 68, 68, 0.15))',
                           border: '1px solid #f59e0b',
                           borderRadius: '6px',
                           color: '#f59e0b',
@@ -1705,12 +1847,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     )
                   ) : (
                     <button
-                      onClick={() => _onNavigateView('linux-machine')}
+                      onClick={() => {
+                        if (selectedCurriculumLab.scenario === 'file-upload') {
+                          window.location.hash = '#/hotel-breach/file-upload';
+                        } else {
+                          window.location.hash = '#/hotel-breach';
+                        }
+                        _onNavigateView('hotel-breach');
+                      }}
                       style={{
                         width: '100%',
                         padding: '12px 14px',
-                        background: 'linear-gradient(135deg, rgba(0, 255, 157, 0.25), rgba(0, 240, 255, 0.25))',
-                        border: '1px solid #00ff9d',
+                        background: selectedCurriculumLab.scenario === 'file-upload'
+                          ? 'linear-gradient(135deg, rgba(0, 255, 157, 0.3), rgba(0, 240, 255, 0.25))'
+                          : 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(0, 240, 255, 0.25))',
+                        border: `1px solid ${selectedCurriculumLab.scenario === 'file-upload' ? '#00ff9d' : '#3b82f6'}`,
                         borderRadius: '6px',
                         color: '#ffffff',
                         fontSize: '12px',
@@ -1721,12 +1872,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '8px',
-                        boxShadow: '0 0 20px rgba(0, 255, 157, 0.3)',
+                        boxShadow: `0 0 20px ${selectedCurriculumLab.scenario === 'file-upload' ? 'rgba(0, 255, 157, 0.4)' : 'rgba(59, 130, 246, 0.4)'}`,
                         transition: 'all 0.2s ease'
                       }}
                     >
-                      <TerminalIcon size={14} color="#00ff9d" />
-                      <span>TERMİNALİ BAŞLAT ↗</span>
+                      <Flame size={14} color={selectedCurriculumLab.scenario === 'file-upload' ? '#00ff9d' : '#60a5fa'} />
+                      <span>
+                        {selectedCurriculumLab.scenario === 'file-upload'
+                          ? '🔵 DOSYA YÜKLEME LABINA BAŞLA (MAVİ TAKIM) ↗'
+                          : '🔵 HOTEL LABINA BAŞLA (MAVİ TAKIM) ↗'}
+                      </span>
                     </button>
                   )}
 

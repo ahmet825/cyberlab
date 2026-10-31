@@ -10,12 +10,14 @@ import { AiMentorPanel } from './components/ai/AiMentorPanel';
 import { SettingsModal } from './components/modals/SettingsModal';
 import { LandingPage } from './components/landing/LandingPage';
 import { AuthModal } from './components/modals/AuthModal';
+import { PentestLockedGate } from './components/browser/PentestLockedGate';
+import { verifyLabFlag } from './lib/sandbox/flagVault';
 
-const LinuxMachineView = React.lazy(() =>
-  import('./components/linux-machine/LinuxMachineView').then((m) => ({ default: m.LinuxMachineView }))
-);
 const LegalView = React.lazy(() =>
   import('./components/legal/LegalView').then((m) => ({ default: m.LegalView }))
+);
+const HotelBreachLab = React.lazy(() =>
+  import('./components/hotel/HotelBreachLab').then((m) => ({ default: m.HotelBreachLab }))
 );
 
 import { evaluateLabProgress } from './lib/sandbox/progressTracker';
@@ -26,26 +28,21 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
-  Target,
-  Circle,
   Maximize2,
   Minimize2,
   Terminal,
   Bot,
-  RotateCcw,
   Settings as SettingsIcon,
   Shield,
   Lock
 } from 'lucide-react';
 import { resetDatabase } from './lib/sql/sqliteEngine';
-import { resetBlogComments } from './lib/sandbox/handlers/blogHandler';
 import { dispatchVirtualHttpRequest } from './lib/sandbox/virtualServer';
 import { supabase, isSupabaseConfigured, signOutUser } from './lib/supabase/supabaseClient';
 import {
   saveLabProgress,
   saveCapturedFlag,
   syncLocalProgressWithCloud,
-  resetSingleLabCloudProgress,
   resetUserCloudProgress
 } from './lib/supabase/dbService';
 
@@ -239,15 +236,15 @@ export const App: React.FC = () => {
           }
           setCurrentView('arena');
         }
-      } else if (hash.startsWith('#/linux')) {
-        activeLabIdRef.current = null;
-        setCurrentView('linux-machine');
       } else if (hash === '#/feragatname' || hash === '#/yasal/feragatname') {
         activeLabIdRef.current = null;
         setCurrentView('disclaimer');
       } else if (hash === '#/kvkk' || hash === '#/yasal/kvkk') {
         activeLabIdRef.current = null;
         setCurrentView('kvkk');
+      } else if (hash.startsWith('#/hotel') || hash === '#/hotel-breach') {
+        activeLabIdRef.current = null;
+        setCurrentView('hotel-breach');
       } else if (hash === '#/arena') {
         if (activeLabIdRef.current !== allLabs[0].id) {
           activeLabIdRef.current = allLabs[0].id;
@@ -270,12 +267,12 @@ export const App: React.FC = () => {
   useEffect(() => {
     if (currentView === 'landing') {
       document.title = 'SiberAdam // Uygulamalı Siber Güvenlik Eğitimi & İnteraktif CTF Laboratuvarı';
-    } else if (currentView === 'linux-machine') {
-      document.title = 'SiberAdam // Linux Sistemleri & CTF Öğrenme Makinesi';
     } else if (currentView === 'disclaimer') {
       document.title = 'SiberAdam // Siber Güvenlik Eğitim Feragatnamesi & Yasal Uyarı';
     } else if (currentView === 'kvkk') {
       document.title = 'SiberAdam // 6698 Sayılı KVKK Aydınlatma Metni & Çerez Politikası';
+    } else if (currentView === 'hotel-breach') {
+      document.title = 'SiberAdam // HOTEL SİSTEMİ TEHLİKE ALTINDA: Express Zafiyet Analizi & Sınavı';
     } else {
       document.title = `${currentLab.title} - ${currentLab.category} (${currentLab.difficulty}) // SiberAdam Labs`;
     }
@@ -396,36 +393,6 @@ export const App: React.FC = () => {
     setXssModal({ isOpen: true, payload });
   };
 
-  // Reset current lab (including its solved status and stage progress)
-  const handleResetLab = () => {
-    setBrowserUrl(currentLab.startingUrl);
-    setCookies({
-      session_id: 'sess_99a8b1c4',
-      user_role: 'guest'
-    });
-    setHttpLogs([]);
-    setSolvedLabIds((prev) => {
-      const next = new Set(prev);
-      next.delete(currentLab.id);
-      return next;
-    });
-    setStageProgress((prev) => {
-      const next = { ...prev };
-      delete next[currentLab.id];
-      return next;
-    });
-    setCapturedFlags((prev) => {
-      const next = { ...prev };
-      delete next[currentLab.id];
-      return next;
-    });
-    if (currentUser?.id) {
-      resetSingleLabCloudProgress(currentUser.id, currentLab.id);
-    }
-    resetBlogComments();
-    resetDatabase();
-  };
-
   // Log HTTP Request (from Browser or Terminal)
   const handleLogHttpRequest = (req: {
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -521,7 +488,7 @@ export const App: React.FC = () => {
     return { status: resp.status, headers: resp.headers, body: resp.html };
   };
 
-  // Next lab navigator: sequentially goes to next challenge or to Linux machine
+  // Next lab navigator: sequentially goes to next challenge
   const handleGoToNextLab = () => {
     const currentIndex = allLabs.findIndex((l) => l.id === currentLab.id);
     if (currentIndex >= 0 && currentIndex + 1 < allLabs.length) {
@@ -537,8 +504,7 @@ export const App: React.FC = () => {
       }
       handleSelectLab(nextLab);
     } else {
-      setCurrentView('linux-machine');
-      window.location.hash = '#/linux';
+      handleSelectLab(allLabs[0]);
     }
   };
 
@@ -607,12 +573,12 @@ export const App: React.FC = () => {
           onEnterArena={handleEnterArena}
           onNavigateView={(view) => {
             setCurrentView(view);
-            if (view === 'linux-machine') {
-              window.location.hash = '#/linux';
-            } else if (view === 'landing') {
+            if (view === 'landing') {
               window.location.hash = '#/landing';
             } else if (view === 'arena') {
               window.location.hash = `#/pentest/${currentLab.id}`;
+            } else if (view === 'hotel-breach') {
+              window.location.hash = '#/hotel-breach';
             }
           }}
           solvedCount={solvedLabIds.size}
@@ -633,18 +599,13 @@ export const App: React.FC = () => {
     );
   }
 
-  // If on Linux learning machine view, render Y's Computer CTF terminal
-  if (currentView === 'linux-machine') {
+  // If on Legal Views (Feragatname & KVKK Aydınlatma Metni)
+  if (currentView === 'disclaimer' || currentView === 'kvkk') {
     return (
-      <React.Suspense
-        fallback={
-          <div style={{ background: '#040711', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00ff9d', fontFamily: 'monospace', fontSize: '13px' }}>
-            Debian Linux Terminali &amp; CTF Makinesi Yükleniyor...
-          </div>
-        }
-      >
-        <LinuxMachineView
-          onBackToMain={() => {
+      <React.Suspense fallback={<div style={{ background: '#040711', minHeight: '100vh' }} />}>
+        <LegalView
+          initialTab={currentView === 'kvkk' ? 'kvkk' : 'disclaimer'}
+          onBack={() => {
             setCurrentView('landing');
             window.location.hash = '#/landing';
           }}
@@ -653,13 +614,14 @@ export const App: React.FC = () => {
     );
   }
 
-  // If on Legal Views (Feragatname & KVKK Aydınlatma Metni)
-  if (currentView === 'disclaimer' || currentView === 'kvkk') {
+  // If on Hotel Breach Lab View
+  if (currentView === 'hotel-breach') {
+    const isFileUpload = window.location.hash.includes('upload') || window.location.hash.includes('file');
     return (
       <React.Suspense fallback={<div style={{ background: '#040711', minHeight: '100vh' }} />}>
-        <LegalView
-          initialTab={currentView === 'kvkk' ? 'kvkk' : 'disclaimer'}
-          onBack={() => {
+        <HotelBreachLab
+          initialScenario={isFileUpload ? 'file-upload' : 'api'}
+          onBackToHub={() => {
             setCurrentView('landing');
             window.location.hash = '#/landing';
           }}
@@ -715,7 +677,7 @@ export const App: React.FC = () => {
               <span>
                 {allLabs.findIndex((l) => l.id === currentLab.id) < allLabs.length - 1
                   ? `Sıradaki Challenge: Challenge-${allLabs.findIndex((l) => l.id === currentLab.id) + 2}`
-                  : 'Linux Sistemleri Laboratuvarına Geç'}
+                  : 'Tüm Challenge\'lar Tamamlandı (Başa Dön)'}
               </span>
               <ArrowRight size={13} />
             </button>
@@ -817,30 +779,6 @@ export const App: React.FC = () => {
               </span>
             </div>
 
-            <button
-              onClick={() => {
-                setCurrentView('linux-machine');
-                window.location.hash = '#/linux';
-              }}
-              style={{
-                background: 'rgba(0, 255, 157, 0.08)',
-                border: '1px solid rgba(0, 255, 157, 0.3)',
-                color: 'var(--accent-green)',
-                padding: '4px 8px',
-                borderRadius: '5px',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '10.5px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-              title="Linux Sistemleri CTF Laboratuvarını Aç"
-            >
-              <Terminal size={12} />
-              <span>Linux Sistemleri</span>
-            </button>
-
             <div style={{ background: 'var(--bg-darker)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
               <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'var(--text-dim)', textTransform: 'uppercase', display: 'block' }}>
                 SIRA
@@ -850,65 +788,26 @@ export const App: React.FC = () => {
               </span>
             </div>
 
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>
-                  {currentLab.title}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>
+                {currentLab.title}
+              </span>
+              <span style={{
+                fontSize: '9px',
+                fontFamily: 'var(--font-mono)',
+                padding: '1px 5px',
+                borderRadius: '3px',
+                background: currentLab.difficulty === 'Apprentice' ? 'rgba(0, 240, 255, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                color: currentLab.difficulty === 'Apprentice' ? 'var(--accent-cyan)' : 'var(--accent-orange)'
+              }}>
+                {currentLab.difficulty}
+              </span>
+              {isCurrentSolved && (
+                <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', background: 'rgba(0, 255, 157, 0.15)', color: 'var(--accent-green)', padding: '1px 5px', borderRadius: '3px', fontWeight: 700 }}>
+                  ✓ ÇÖZÜLDÜ
                 </span>
-                <span style={{
-                  fontSize: '9px',
-                  fontFamily: 'var(--font-mono)',
-                  padding: '1px 5px',
-                  borderRadius: '3px',
-                  background: currentLab.difficulty === 'Apprentice' ? 'rgba(0, 240, 255, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                  color: currentLab.difficulty === 'Apprentice' ? 'var(--accent-cyan)' : 'var(--accent-orange)'
-                }}>
-                  {currentLab.difficulty}
-                </span>
-                {isCurrentSolved && (
-                  <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', background: 'rgba(0, 255, 157, 0.15)', color: 'var(--accent-green)', padding: '1px 5px', borderRadius: '3px', fontWeight: 700 }}>
-                    ✓ ÇÖZÜLDÜ
-                  </span>
-                )}
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                <Target size={11} color="var(--accent-green)" />
-                <span style={{ color: '#cbd5e1' }}>
-                  <strong>Şu anki Adım:</strong> {currentLab.stages[0]?.title.split(':')[1] || currentLab.objective}
-                </span>
-              </div>
+              )}
             </div>
-          </div>
-
-          {/* Center: Stage Pills (Interactive) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            {currentLab.stages.map((st) => {
-              const isCompleted = (stageProgress[currentLab.id] || []).includes(st.id) || isCurrentSolved;
-              return (
-                <button
-                  key={st.id}
-                  onClick={() => handleToggleStage(currentLab.id, st.id)}
-                  style={{
-                    background: isCompleted ? 'rgba(0, 255, 157, 0.15)' : 'var(--bg-darker)',
-                    border: `1px solid ${isCompleted ? 'var(--accent-green)' : 'var(--border-subtle)'}`,
-                    color: isCompleted ? 'var(--accent-green)' : 'var(--text-muted)',
-                    padding: '3px 7px',
-                    borderRadius: '4px',
-                    fontSize: '10px',
-                    fontFamily: 'var(--font-mono)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                  title={`Aşama ${st.id}: ${st.objective} (İlerlemeyi kaydetmek için tıklayın)`}
-                >
-                  {isCompleted ? <CheckCircle2 size={10} /> : <Circle size={10} />}
-                  <span>Adım {st.id}</span>
-                </button>
-              );
-            })}
           </div>
 
           {/* Right: Controls (Layout, Reset, Settings, Prev/Next) */}
@@ -1004,17 +903,6 @@ export const App: React.FC = () => {
               </div>
             )}
 
-            {/* Reset Lab State */}
-            <button
-              onClick={handleResetLab}
-              className="action-btn"
-              style={{ padding: '4px 8px', fontSize: '10px' }}
-              title="Laboratuvarı Sıfırla"
-            >
-              <RotateCcw size={12} />
-              <span>Sıfırla</span>
-            </button>
-
             {/* Settings */}
             <button
               onClick={() => setIsSettingsOpen(true)}
@@ -1075,20 +963,49 @@ export const App: React.FC = () => {
             onOpenAuthModal={(reason) => setAuthModal({ isOpen: true, reasonMessage: reason })}
           />
 
-          {/* Center Column: Interactive Target Browser & DevTools */}
-          <TargetBrowser
-            lab={currentLab}
-            url={browserUrl}
-            setUrl={setBrowserUrl}
-            cookies={cookies}
-            setCookie={(k, v) => setCookies((prev) => ({ ...prev, [k]: v }))}
-            httpLogs={httpLogs}
-            onTriggerXssAlert={handleTriggerXssAlert}
-            onLabSolved={handleLabSolved}
-            onLogHttpRequest={handleLogHttpRequest}
-            activeTab={browserTab}
-            onTabChange={setBrowserTab}
-          />
+          {/* Center Column: Interactive Target Browser & DevTools or Red Team Sequential Lock Gate */}
+          {(() => {
+            const currentLabIndex = allLabs.findIndex((l) => l.id === currentLab.id);
+            const prevLab = currentLabIndex > 0 ? allLabs[currentLabIndex - 1] : null;
+            const isSequentialLocked = prevLab !== null && !solvedLabIds.has(prevLab.id);
+
+            if (isSequentialLocked && prevLab) {
+              return (
+                <PentestLockedGate
+                  currentLab={currentLab}
+                  currentLabIndex={currentLabIndex}
+                  prevLab={prevLab}
+                  onUnlockWithFlag={(flag) => {
+                    if (verifyLabFlag(prevLab.id, flag)) {
+                      handleLabSolved(prevLab.id, flag);
+                      return { success: true };
+                    }
+                    return {
+                      success: false,
+                      error: `Hatalı bayrak! Bu kilit yalnızca Challenge #${currentLabIndex} (${prevLab.title}) zafiyetinden elde edilen geçerli FLAG ile açılabilir.`
+                    };
+                  }}
+                  onGoToPrevLab={() => handleSelectLab(prevLab)}
+                />
+              );
+            }
+
+            return (
+              <TargetBrowser
+                lab={currentLab}
+                url={browserUrl}
+                setUrl={setBrowserUrl}
+                cookies={cookies}
+                setCookie={(k, v) => setCookies((prev) => ({ ...prev, [k]: v }))}
+                httpLogs={httpLogs}
+                onTriggerXssAlert={handleTriggerXssAlert}
+                onLabSolved={handleLabSolved}
+                onLogHttpRequest={handleLogHttpRequest}
+                activeTab={browserTab}
+                onTabChange={setBrowserTab}
+              />
+            );
+          })()}
 
           {/* Right Column: AI Security Mentor & Cyber Terminal */}
           {isRightCollapsed ? (
