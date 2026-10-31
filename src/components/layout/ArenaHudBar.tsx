@@ -26,7 +26,6 @@ interface ArenaHudBarProps {
     message: string;
   };
   onFlagSubmit: (flag: string) => void;
-  onSelectLab: (lab: LabItem) => void;
   onNavigateView: (view: 'landing' | 'hotel-breach' | 'arena') => void;
   onOpenSettings: () => void;
   onOpenAuthModal: (reason?: string) => void;
@@ -46,7 +45,6 @@ export const ArenaHudBar: React.FC<ArenaHudBarProps> = ({
   setQuickFlagInput,
   quickFlagStatus,
   onFlagSubmit,
-  onSelectLab,
   onNavigateView,
   onOpenSettings,
   onOpenAuthModal,
@@ -64,10 +62,10 @@ export const ArenaHudBar: React.FC<ArenaHudBarProps> = ({
       <div className="flex items-center gap-3 flex-wrap">
         <button
           onClick={() => onNavigateView('landing')}
-          className="bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-3 py-1.5 rounded-md font-mono text-xs sm:text-sm font-bold cursor-pointer flex items-center gap-2 shadow-[0_0_12px_rgba(0,255,157,0.15)] transition-colors"
-          title="Hikaye ve Çark Başlangıç Sayfasına Dön"
+          className="bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/50 text-emerald-300 px-3.5 py-1.5 rounded-md font-mono text-xs sm:text-sm font-bold cursor-pointer flex items-center gap-2 shadow-[0_0_15px_rgba(0,255,157,0.2)] transition-colors"
+          title="Ana Sayfaya Dön ve Tüm Labları Görüntüle"
         >
-          <span>HİKAYEYE DÖN</span>
+          <span>&larr; ANA SAYFAYA DÖN</span>
         </button>
 
         <div className="flex items-center gap-2 pr-2.5 border-r border-slate-800">
@@ -82,47 +80,6 @@ export const ArenaHudBar: React.FC<ArenaHudBarProps> = ({
             <Database size={11} />
             <span>RxDB</span>
           </span>
-        </div>
-
-        {/* Section Navigation Tabs */}
-        <div className="flex items-center gap-1.5 pr-2.5 border-r border-slate-800">
-          <button
-            onClick={() => {
-              const firstPentest = allLabs.find((l) => l.trackId !== 'track-llm-security') || allLabs[0];
-              onSelectLab(firstPentest);
-            }}
-            className={`px-3 py-1.5 rounded-md font-mono text-xs sm:text-sm font-bold cursor-pointer flex items-center gap-1.5 transition-all ${
-              !isLlmActive
-                ? 'bg-cyan-500/20 border border-cyan-400 text-cyan-200'
-                : 'border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-            title="Web Pentest Laboratuvarları"
-          >
-            <span>🌐 Pentest ({webLabs.length})</span>
-          </button>
-
-          <button
-            onClick={() => {
-              const firstLlm = allLabs.find((l) => l.trackId === 'track-llm-security');
-              if (firstLlm) onSelectLab(firstLlm);
-            }}
-            className={`px-3 py-1.5 rounded-md font-mono text-xs sm:text-sm font-bold cursor-pointer flex items-center gap-1.5 transition-all ${
-              isLlmActive
-                ? 'bg-purple-500/25 border border-purple-400 text-purple-200'
-                : 'border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-            title="Yapay Zeka Güvenliği Laboratuvarları"
-          >
-            <span>🤖 LLM ({llmLabs.length})</span>
-          </button>
-
-          <button
-            onClick={() => onNavigateView('hotel-breach')}
-            className="px-3 py-1.5 rounded-md font-mono text-xs sm:text-sm font-bold cursor-pointer flex items-center gap-1.5 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all hover:bg-slate-800"
-            title="Grand Horizon Express Mavi Takım Sınavı"
-          >
-            <span>🏨 Hotel Lab</span>
-          </button>
         </div>
 
         {/* Active Lab Number & Title */}

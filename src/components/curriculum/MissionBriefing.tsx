@@ -6,8 +6,6 @@ import {
   CheckCircle2,
   Circle,
   HelpCircle,
-  ArrowLeft,
-  ArrowRight,
   ExternalLink,
   BookOpen
 } from 'lucide-react';
@@ -22,8 +20,6 @@ interface MissionBriefingProps {
   onToggleStage: (labId: string, stageId: number) => void;
   unlockedHints: Record<string, number>;
   onUnlockHint: (labId: string, hintIndex: number) => void;
-  onGoToNextLab?: () => void;
-  onGoToPrevLab?: () => void;
   isCurrentSequentialLocked: boolean;
   indexInTrack: number;
 }
@@ -36,8 +32,6 @@ export const MissionBriefing: React.FC<MissionBriefingProps> = ({
   onToggleStage,
   unlockedHints,
   onUnlockHint,
-  onGoToNextLab,
-  onGoToPrevLab,
   isCurrentSequentialLocked,
   indexInTrack
 }) => {
@@ -235,29 +229,6 @@ export const MissionBriefing: React.FC<MissionBriefingProps> = ({
           </div>
         );
       })()}
-
-      {/* Prev / Next Lab Navigation Strip */}
-      <div className="flex items-center justify-between pt-3 border-t border-slate-800">
-        <button
-          type="button"
-          onClick={onGoToPrevLab}
-          disabled={currentIndex <= 0}
-          className="text-xs sm:text-sm font-mono font-bold text-slate-400 hover:text-white flex items-center gap-1.5 disabled:opacity-30 cursor-pointer disabled:cursor-default px-2 py-1.5 rounded hover:bg-slate-900 transition-colors"
-        >
-          <ArrowLeft size={15} />
-          <span>Önceki Challenge</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={onGoToNextLab}
-          disabled={currentIndex >= allLabs.length - 1}
-          className="text-xs sm:text-sm font-mono font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 disabled:opacity-30 cursor-pointer disabled:cursor-default px-2 py-1.5 rounded hover:bg-slate-900 transition-colors"
-        >
-          <span>Sıradaki Challenge</span>
-          <ArrowRight size={15} />
-        </button>
-      </div>
     </div>
   );
 };

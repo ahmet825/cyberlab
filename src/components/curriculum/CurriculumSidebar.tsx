@@ -15,8 +15,6 @@ interface CurriculumSidebarProps {
   solvedLabIds: Set<string>;
   stageProgress: Record<string, number[]>;
   onToggleStage: (labId: string, stageId: number) => void;
-  onGoToNextLab?: () => void;
-  onGoToPrevLab?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   currentUser?: UserProfile | null;
@@ -28,8 +26,6 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
   solvedLabIds,
   stageProgress,
   onToggleStage,
-  onGoToNextLab,
-  onGoToPrevLab,
   isCollapsed = false,
   onToggleCollapse
 }) => {
@@ -119,8 +115,6 @@ export const CurriculumSidebar: React.FC<CurriculumSidebarProps> = ({
           onToggleStage={onToggleStage}
           unlockedHints={unlockedHints}
           onUnlockHint={handleUnlockHint}
-          onGoToNextLab={onGoToNextLab}
-          onGoToPrevLab={onGoToPrevLab}
           isCurrentSequentialLocked={isCurrentSequentialLocked}
           indexInTrack={indexInTrack}
         />

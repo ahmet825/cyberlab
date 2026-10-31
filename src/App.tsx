@@ -98,7 +98,6 @@ export const App: React.FC = () => {
     handleFlagSubmit,
     handleLogHttpRequest,
     handleTerminalHttpRequest,
-    handleGoToNextLab,
     handleEnterArena,
     handleSignOut,
     handleResetCloudProgress,
@@ -178,13 +177,6 @@ export const App: React.FC = () => {
   const prevLab = indexInTrack > 0 ? trackLabs[indexInTrack - 1] : null;
   const isSequentialLocked = prevLab !== null && !solvedLabIds.has(prevLab.id);
 
-  const handleGoToPrevLab = () => {
-    const currentIndex = allLabs.findIndex((l) => l.id === currentLab.id);
-    if (currentIndex > 0) {
-      handleSelectLab(allLabs[currentIndex - 1]);
-    }
-  };
-
   return (
     <div className="w-full h-screen max-w-full flex flex-col overflow-hidden bg-slate-950 text-slate-100 select-none">
       {/* Solved Top Banner */}
@@ -192,9 +184,11 @@ export const App: React.FC = () => {
         <SolvedBanner
           currentLab={currentLab}
           currentUser={currentUser}
-          allLabs={allLabs}
           onOpenAuthModal={(reason) => setAuthModal({ isOpen: true, reasonMessage: reason })}
-          onGoToNextLab={handleGoToNextLab}
+          onBackToLanding={() => {
+            setCurrentView('landing');
+            window.location.hash = '#/landing';
+          }}
         />
       )}
 
@@ -255,7 +249,6 @@ export const App: React.FC = () => {
             setQuickFlagInput={setQuickFlagInput}
             quickFlagStatus={quickFlagStatus}
             onFlagSubmit={handleFlagSubmit}
-            onSelectLab={handleSelectLab}
             onNavigateView={(view) => {
               setCurrentView(view);
               window.location.hash = `#/${view}`;
@@ -283,8 +276,6 @@ export const App: React.FC = () => {
               solvedLabIds={solvedLabIds}
               stageProgress={stageProgress}
               onToggleStage={handleToggleStage}
-              onGoToNextLab={handleGoToNextLab}
-              onGoToPrevLab={handleGoToPrevLab}
               isCollapsed={isLeftCollapsed}
               onToggleCollapse={() => setIsLeftCollapsed(!isLeftCollapsed)}
               currentUser={currentUser}
@@ -522,7 +513,7 @@ export const App: React.FC = () => {
         )}
       </Suspense>
 
-      {/* Lab Solved Victory Modal with Internal Links */}
+      {/* Lab Solved Victory Modal */}
       <Suspense fallback={null}>
         {victoryModal.isOpen && (
           <LabSolvedModal
@@ -531,17 +522,10 @@ export const App: React.FC = () => {
             lab={victoryModal.lab}
             flag={victoryModal.flag}
             pointsEarned={victoryModal.points}
-            onNextLab={handleGoToNextLab}
-            onSelectRelatedLab={(relLabId) => {
-              const target = allLabs.find((l) => l.id === relLabId);
-              if (target) {
-                handleSelectLab(target);
-                if (currentView !== 'arena') {
-                  setCurrentView('arena');
-                }
-              }
+            onBackToLanding={() => {
+              setCurrentView('landing');
+              window.location.hash = '#/landing';
             }}
-            hasNextLab={true}
           />
         )}
       </Suspense>

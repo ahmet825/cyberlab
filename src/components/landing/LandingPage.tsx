@@ -393,31 +393,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           gap: '12px'
         }}
       >
-        <button
-          onClick={() => {
-            _onNavigateView('hotel-breach');
-          }}
-          style={{
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.2) 100%)',
-            border: '1.5px solid #f59e0b',
-            color: '#fbbf24',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '13px',
-            fontWeight: 800,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: '0 0 20px rgba(245, 158, 11, 0.35)',
-            transition: 'all 0.2s ease'
-          }}
-          title="HOTEL SİSTEMİ TEHLİKE ALTINDA: Mavi Takım Güvenli Kod İnceleme & API Zafiyet Simülasyonu (Premium VIP)"
-        >
-          <span style={{ fontSize: '15px' }}>👑</span>
-          <span>Mavi Takım: Hotel Lab</span>
-        </button>
         {currentUser ? (
           <div
             style={{
@@ -624,10 +599,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         {/* Instruction subheader */}
-        <div style={{ fontSize: '10.5px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
+        <div style={{ fontSize: '11px', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
           {leftCategoryTab === 'pentest'
-            ? (currentUser ? '🔴 Kırmızı Takım: Saldırı senaryolarını test edin.' : '🔴 Kırmızı Takım: İlk 4 lab herkese açıktır.')
-            : '🔵 Mavi Takım: Kod okuma, API konsolu ve savunma testi.'}
+            ? '🔴 Kırmızı Takım & AI: Tüm zafiyet ve prompt injection senaryoları.'
+            : '🔵 Mavi Takım: Grand Horizon Hotel Express kod analizi & API savunması.'}
         </div>
 
         {/* Scrollable Lab Items List - NO THUMBNAILS! */}
@@ -636,8 +611,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             allLabs.map((lab, idx) => {
               const isSelected = selectedCurriculumLab?.type === 'pentest' && selectedCurriculumLab.lab.id === lab.id;
               const isSolved = solvedLabIds.has(lab.id);
-              const isFreeLab = idx < 4;
-              const isLocked = !currentUser && !isFreeLab;
+              const isLocked = false; // Tüm lablar doğrudan erişilebilir
 
               const difficultyTurkish = 
                 lab.difficulty === 'Apprentice' ? 'Başlangıç' :
@@ -1773,8 +1747,49 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {selectedCurriculumLab.type === 'pentest' ? (
-                    (currentUser || allLabs.findIndex((l) => l.id === selectedCurriculumLab.lab.id) < 4) ? (
+                  {(() => {
+                    const isHotel =
+                      selectedCurriculumLab.type === 'hotel' ||
+                      (selectedCurriculumLab.type === 'pentest' && selectedCurriculumLab.lab.id.includes('hotel'));
+
+                    if (isHotel) {
+                      return (
+                        <button
+                          onClick={() => {
+                            if (selectedCurriculumLab.type === 'hotel' && selectedCurriculumLab.scenario === 'file-upload') {
+                              window.location.hash = '#/hotel-breach/file-upload';
+                            } else {
+                              window.location.hash = '#/hotel-breach';
+                            }
+                            _onNavigateView('hotel-breach');
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '12px 14px',
+                            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(0, 240, 255, 0.25))',
+                            border: '1px solid #3b82f6',
+                            borderRadius: '6px',
+                            color: '#ffffff',
+                            fontSize: '13px',
+                            fontWeight: 800,
+                            fontFamily: 'var(--font-mono)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            boxShadow: '0 0 20px rgba(59, 130, 246, 0.4)',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <Flame size={15} color="#60a5fa" />
+                          <span>🔵 HOTEL SİMÜLASYONUNA BAŞLA (ÜCRETSİZ / GİRİŞSİZ) ↗</span>
+                        </button>
+                      );
+                    }
+
+                    // Pentest challenge
+                    return (
                       <button
                         onClick={() => onEnterArena(selectedCurriculumLab.lab)}
                         style={{
@@ -1784,7 +1799,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                           border: '1px solid #ef4444',
                           borderRadius: '6px',
                           color: '#ffffff',
-                          fontSize: '12px',
+                          fontSize: '13px',
                           fontWeight: 800,
                           fontFamily: 'var(--font-mono)',
                           cursor: 'pointer',
@@ -1796,74 +1811,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                           transition: 'all 0.2s ease'
                         }}
                       >
-                        <Shield size={14} color="#ef4444" />
-                        <span>🔴 LABA BAŞLA ↗</span>
+                        <Shield size={15} color="#ef4444" />
+                        <span>🔴 LABORATUVARA GİRİŞ YAP ↗</span>
                       </button>
-                    ) : (
-                      <button
-                        onClick={() => onOpenAuthModal?.(`"${selectedCurriculumLab.lab.title}" laboratuvarına erişmek ve ilerlemenizi kaydetmek için lütfen giriş yapın. (İlk 4 challenge herkese açıktır).`)}
-                        style={{
-                          width: '100%',
-                          padding: '12px 14px',
-                          background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(239, 68, 68, 0.15))',
-                          border: '1px solid #f59e0b',
-                          borderRadius: '6px',
-                          color: '#f59e0b',
-                          fontSize: '12px',
-                          fontWeight: 800,
-                          fontFamily: 'var(--font-mono)',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          boxShadow: '0 0 15px rgba(245, 158, 11, 0.2)',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        <Key size={14} color="#f59e0b" />
-                        <span>GİRİŞ YAP VE BAŞLA ↗</span>
-                      </button>
-                    )
-                  ) : (
-                    <button
-                      onClick={() => {
-                        if (selectedCurriculumLab.scenario === 'file-upload') {
-                          window.location.hash = '#/hotel-breach/file-upload';
-                        } else {
-                          window.location.hash = '#/hotel-breach';
-                        }
-                        _onNavigateView('hotel-breach');
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '12px 14px',
-                        background: selectedCurriculumLab.scenario === 'file-upload'
-                          ? 'linear-gradient(135deg, rgba(0, 255, 157, 0.3), rgba(0, 240, 255, 0.25))'
-                          : 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(0, 240, 255, 0.25))',
-                        border: `1px solid ${selectedCurriculumLab.scenario === 'file-upload' ? '#00ff9d' : '#3b82f6'}`,
-                        borderRadius: '6px',
-                        color: '#ffffff',
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        fontFamily: 'var(--font-mono)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        boxShadow: `0 0 20px ${selectedCurriculumLab.scenario === 'file-upload' ? 'rgba(0, 255, 157, 0.4)' : 'rgba(59, 130, 246, 0.4)'}`,
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <Flame size={14} color={selectedCurriculumLab.scenario === 'file-upload' ? '#00ff9d' : '#60a5fa'} />
-                      <span>
-                        {selectedCurriculumLab.scenario === 'file-upload'
-                          ? '🔵 DOSYA YÜKLEME LABINA BAŞLA (MAVİ TAKIM) ↗'
-                          : '🔵 HOTEL LABINA BAŞLA (MAVİ TAKIM) ↗'}
-                      </span>
-                    </button>
-                  )}
+                    );
+                  })()}
 
                   <button
                     onClick={handleCopySsgLink}

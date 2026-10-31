@@ -4,7 +4,7 @@ import {
   CheckCircle2,
   Copy,
   Check,
-  ArrowRight,
+  ArrowLeft,
   ExternalLink,
   BookOpen,
   Sparkles,
@@ -21,9 +21,7 @@ interface LabSolvedModalProps {
   lab: LabItem | null;
   flag: string;
   pointsEarned?: number;
-  onNextLab?: () => void;
-  onSelectRelatedLab?: (labId: string) => void;
-  hasNextLab?: boolean;
+  onBackToLanding?: () => void;
 }
 
 export const LabSolvedModal: React.FC<LabSolvedModalProps> = ({
@@ -32,9 +30,7 @@ export const LabSolvedModal: React.FC<LabSolvedModalProps> = ({
   lab,
   flag,
   pointsEarned = 50,
-  onNextLab,
-  onSelectRelatedLab,
-  hasNextLab = true
+  onBackToLanding
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -42,7 +38,7 @@ export const LabSolvedModal: React.FC<LabSolvedModalProps> = ({
 
   const refData = getLabSecurityReferences(lab.id);
 
-  // Find related internal labs
+  // Find related internal labs (for informational context)
   const relatedLabs: LabItem[] = refData.relatedLabIds
     .map((id) => ALL_SANDBOX_LABS.find((l) => l.id === id))
     .filter((l): l is LabItem => Boolean(l));
@@ -142,56 +138,49 @@ export const LabSolvedModal: React.FC<LabSolvedModalProps> = ({
             </div>
           </div>
 
-          {/* Next Lab Primary Action */}
-          {hasNextLab && onNextLab && (
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onNextLab();
-                }}
-                className="w-full sm:flex-1 py-3 px-4 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold font-mono text-sm flex items-center justify-center gap-2 transition-transform transform active:scale-95 shadow-lg shadow-emerald-500/25 cursor-pointer"
-              >
-                <span>Sıradaki Challenge&apos;a Geç</span>
-                <ArrowRight size={16} />
-              </button>
+          {/* Return to Landing / Hub Primary Action */}
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                if (onBackToLanding) {
+                  onBackToLanding();
+                }
+              }}
+              className="w-full sm:flex-1 py-3 px-4 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold font-mono text-sm flex items-center justify-center gap-2 transition-transform transform active:scale-95 shadow-lg shadow-emerald-500/25 cursor-pointer"
+            >
+              <ArrowLeft size={16} />
+              <span>Ana Sayfaya Dön (Yeni Görev Seç)</span>
+            </button>
 
-              <button
-                type="button"
-                onClick={onClose}
-                className="w-full sm:w-auto py-3 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-mono text-xs border border-slate-800 transition-colors cursor-pointer"
-              >
-                Arenada Kal &amp; İncele
-              </button>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full sm:w-auto py-3 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-mono text-xs border border-slate-800 transition-colors cursor-pointer"
+            >
+              Bu Ekranda Kal
+            </button>
+          </div>
 
-          {/* Site İçi İlgili Linkler (Internal Related Labs) */}
+          {/* Site İçi İlgili Lab Konuları (Bilgilendirme) */}
           {relatedLabs.length > 0 && (
             <div className="space-y-3 pt-2 border-t border-slate-800/80">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs sm:text-sm font-mono font-bold text-cyan-400 flex items-center gap-1.5 uppercase">
                   <Sparkles size={14} />
-                  Önerilen Sıradaki İlgili Görevler (Site İçi)
+                  Ana Sayfadan Seçebileceğiniz İlgili Görevler
                 </h3>
-                <span className="text-xs font-mono text-slate-400">
-                  {relatedLabs.length} Bağlantılı Lab
+                <span className="text-[11px] font-mono text-slate-400">
+                  Ana Sayfa Üzerinden Erişilebilir
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {relatedLabs.map((relLab) => (
-                  <button
+                  <div
                     key={relLab.id}
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      if (onSelectRelatedLab) {
-                        onSelectRelatedLab(relLab.id);
-                      }
-                    }}
-                    className="group p-3 rounded-lg bg-slate-900 hover:bg-slate-800/90 border border-slate-800 hover:border-cyan-500/50 text-left transition-all cursor-pointer flex flex-col justify-between"
+                    className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-left flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-1 mb-1">
@@ -202,18 +191,18 @@ export const LabSolvedModal: React.FC<LabSolvedModalProps> = ({
                           {relLab.estimatedMinutes} dk
                         </span>
                       </div>
-                      <h4 className="text-xs font-semibold text-white group-hover:text-cyan-300 transition-colors line-clamp-1">
+                      <h4 className="text-xs font-semibold text-white line-clamp-1">
                         {relLab.title}
                       </h4>
                     </div>
 
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[11px] font-mono text-slate-400 group-hover:text-cyan-400">
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[11px] font-mono text-slate-400">
                       <span>{relLab.difficulty}</span>
-                      <span className="flex items-center gap-1 font-bold">
-                        Hemen Başla &rarr;
+                      <span className="text-emerald-400 font-semibold text-[10px]">
+                        Ana Sayfada Mevcut
                       </span>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -257,4 +246,3 @@ export const LabSolvedModal: React.FC<LabSolvedModalProps> = ({
     </div>
   );
 };
-
