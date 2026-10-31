@@ -1,38 +1,40 @@
+@import "tailwindcss";
+
 /* ==========================================================================
    HACKERARENA DESIGN SYSTEM // OBSIDIAN CYBER AESTHETICS
    ========================================================================== */
 
 :root {
   /* Color Palette */
-  --bg-darker: #060910;
+  --bg-darker: #050811;
   --bg-dark: #0a0f1d;
-  --bg-card: #0f172a;
-  --bg-card-hover: #162038;
-  --bg-card-elevated: #1e293b;
-  --bg-input: #090e1a;
+  --bg-card: #0d1527;
+  --bg-card-hover: #141f36;
+  --bg-card-elevated: #1a2744;
+  --bg-input: #070c18;
 
   /* Borders & Dividers */
   --border-subtle: #1e293b;
   --border-medium: #334155;
-  --border-accent: rgba(0, 255, 157, 0.3);
-  --border-cyan: rgba(0, 240, 255, 0.3);
-  --border-orange: rgba(245, 158, 11, 0.3);
+  --border-accent: rgba(0, 255, 157, 0.4);
+  --border-cyan: rgba(0, 240, 255, 0.4);
+  --border-orange: rgba(245, 158, 11, 0.4);
 
   /* Accents */
   --accent-green: #00ff9d;
-  --accent-green-glow: rgba(0, 255, 157, 0.25);
+  --accent-green-glow: rgba(0, 255, 157, 0.35);
   --accent-cyan: #00f0ff;
-  --accent-cyan-glow: rgba(0, 240, 255, 0.25);
+  --accent-cyan-glow: rgba(0, 240, 255, 0.35);
   --accent-orange: #f59e0b;
-  --accent-orange-glow: rgba(245, 158, 11, 0.25);
+  --accent-orange-glow: rgba(245, 158, 11, 0.35);
   --accent-red: #ff3366;
-  --accent-red-glow: rgba(255, 51, 102, 0.25);
+  --accent-red-glow: rgba(255, 51, 102, 0.35);
   --accent-purple: #a855f7;
 
-  /* Text Colors */
+  /* Text Colors - High Contrast */
   --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --text-muted: #cbd5e1;
+  --text-dim: #94a3b8;
   --text-code: #38bdf8;
 
   /* Typography */
@@ -41,20 +43,18 @@
   --font-display: 'Space Grotesk', 'Outfit', sans-serif;
 
   /* Shadows & Glows */
-  --glow-green: 0 0 20px rgba(0, 255, 157, 0.35);
-  --glow-cyan: 0 0 20px rgba(0, 240, 255, 0.35);
-  --glow-orange: 0 0 20px rgba(245, 158, 11, 0.35);
-  --glow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  --glow-green: 0 0 25px rgba(0, 255, 157, 0.4);
+  --glow-cyan: 0 0 25px rgba(0, 240, 255, 0.4);
+  --glow-orange: 0 0 25px rgba(245, 158, 11, 0.4);
+  --glow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.7);
 
   /* Layout */
-  --header-height: 58px;
-  --sidebar-width: 320px;
+  --header-height: 60px;
+  --sidebar-width: 340px;
 }
 
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html, body {
@@ -63,26 +63,49 @@ html, body {
   background-color: var(--bg-darker);
   color: var(--text-main);
   font-family: var(--font-ui);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.6;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
+/* Base button and input styling to prevent flat preflight wash-out */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  color: #fff;
+}
+
 /* Custom Cyber Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+  background: var(--bg-darker);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-medium);
-  border-radius: 3px;
+  background: #25334d;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-dim);
+  background: #3b4e72;
+}
+
+/* Cyber Glow Utilities */
+.glow-box-green {
+  box-shadow: 0 0 20px rgba(0, 255, 157, 0.25);
+}
+.glow-box-cyan {
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+}
+.glow-box-purple {
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
 }
 
 /* Scanline and Subtle Grid Background */

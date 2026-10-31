@@ -1,26 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './hotel.css';
 import { HOTEL_QUIZ_QUESTIONS, HOTEL_FILE_UPLOAD_QUIZ_QUESTIONS, type QuizQuestion } from '../../data/hotelQuizData';
-import { CheckCircle2, Award, AlertTriangle, ArrowRight, RotateCcw, Code, ShieldCheck } from 'lucide-react';
+import { Database, CheckCircle2, Award, AlertTriangle, ArrowRight, RotateCcw, Code, ShieldCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import {
+  saveHotelAnswerRx,
+  saveHotelQuizSessionRx,
+  loadHotelQuizStateRx,
+  resetHotelQuizRx,
+  subscribeToHotelQuizRx,
+  getRxHotelQuestions,
+  observeRxHotelQuestions
+} from '../../lib/rxdb';
 
 interface HotelQuizModuleProps {
   scenario?: 'api' | 'file-upload';
 }
 
 export const HotelQuizModule: React.FC<HotelQuizModuleProps> = ({ scenario = 'api' }) => {
-  const questions: QuizQuestion[] = scenario === 'file-upload' ? HOTEL_FILE_UPLOAD_QUIZ_QUESTIONS : HOTEL_QUIZ_QUESTIONS;
+  const fallbackQuestions: QuizQuestion[] = scenario === 'file-upload' ? HOTEL_FILE_UPLOAD_QUIZ_QUESTIONS : HOTEL_QUIZ_QUESTIONS;
+  const [questions, setQuestions] = useState<QuizQuestion[]>(fallbackQuestions);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showCodeDiff, setShowCodeDiff] = useState(false);
+  const [rxDbReady, setRxDbReady] = useState(false);
 
-  // Reset when scenario changes
-  React.useEffect(() => {
+  // Load questions and persisted answers from RxDB and subscribe to live changes
+  useEffect(() => {
+    let isMounted = true;
     setCurrentQuestionIndex(0);
-    setUserAnswers({});
-    setIsSubmitted(false);
     setShowCodeDiff(false);
+
+    // 1. Load questions from RxDB
+    getRxHotelQuestions(scenario).then((loadedQuestions) => {
+      if (isMounted && loadedQuestions.length > 0) {
+        setQuestions(loadedQuestions);
+      }
+    });
+
+    const unsubQuestions = observeRxHotelQuestions(scenario, (updated) => {
+      if (isMounted && updated.length > 0) {
+        setQuestions(updated);
+      }
+    });
+
+    // 2. Load user answers from RxDB
+    loadHotelQuizStateRx(scenario).then((state) => {
+      if (isMounted) {
+        setUserAnswers(state.userAnswers);
+        if (state.session?.isSubmitted) {
+          setIsSubmitted(true);
+        } else {
+          setIsSubmitted(false);
+        }
+        setRxDbReady(true);
+      }
+    });
+
+    const unsubscribe = subscribeToHotelQuizRx(scenario, (state) => {
+      if (isMounted) {
+        setUserAnswers(state.userAnswers);
+        if (state.session?.isSubmitted) {
+          setIsSubmitted(true);
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+      unsubQuestions();
+    };
   }, [scenario]);
 
   const question: QuizQuestion = questions[currentQuestionIndex] || questions[0];
@@ -28,10 +79,13 @@ export const HotelQuizModule: React.FC<HotelQuizModuleProps> = ({ scenario = 'ap
 
   const handleSelectOption = (optKey: 'A' | 'B' | 'C' | 'D') => {
     if (isSubmitted) return;
-    setUserAnswers({
-      ...userAnswers,
+    setUserAnswers((prev) => ({
+      ...prev,
       [question.id]: optKey
-    });
+    }));
+
+    const isCorrect = question.options.find((o) => o.key === optKey)?.isCorrect || false;
+    saveHotelAnswerRx(scenario, question.id, optKey, isCorrect);
   };
 
   const handleNext = () => {
@@ -65,8 +119,19 @@ export const HotelQuizModule: React.FC<HotelQuizModuleProps> = ({ scenario = 'ap
 
   const handleSubmitQuiz = () => {
     setIsSubmitted(true);
-    const { isPass } = calculateResults();
-    if (isPass) {
+    const results = calculateResults();
+
+    saveHotelQuizSessionRx({
+      scenario,
+      scorePercent: results.scorePercent,
+      correctCount: results.correctCount,
+      totalQuestions,
+      isSubmitted: true,
+      isPass: results.isPass,
+      updatedAt: new Date().toISOString()
+    });
+
+    if (results.isPass) {
       confetti({
         particleCount: 90,
         spread: 70,
@@ -80,6 +145,7 @@ export const HotelQuizModule: React.FC<HotelQuizModuleProps> = ({ scenario = 'ap
     setIsSubmitted(false);
     setCurrentQuestionIndex(0);
     setShowCodeDiff(false);
+    resetHotelQuizRx(scenario);
   };
 
   const results = calculateResults();
@@ -137,6 +203,25 @@ export const HotelQuizModule: React.FC<HotelQuizModuleProps> = ({ scenario = 'ap
             }}>
               {answeredCount} / {totalQuestions}
             </span>
+            {rxDbReady && (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '2px 6px',
+                  borderRadius: '3px',
+                  background: 'rgba(0, 255, 157, 0.08)',
+                  color: 'var(--accent-green, #00ff9d)',
+                  fontSize: '9.5px',
+                  border: '1px solid rgba(0, 255, 157, 0.25)'
+                }}
+                title="RxDB Reaktif Yerel Depolama Devrede: Yanıtlarınız çevrimdışı kaydedilir."
+              >
+                <Database size={10} />
+                <span>RxDB</span>
+              </span>
+            )}
           </div>
         ) : (
           <div style={{

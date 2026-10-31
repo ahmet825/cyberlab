@@ -1057,6 +1057,112 @@ const COMMON_CSS = `
   }
 `;
 
+function getLabExternalLinks(lab) {
+  const links = [];
+  const cat = (lab.category || '').toLowerCase();
+  const id = (lab.id || '').toLowerCase();
+
+  if (cat.includes('xss') || id.includes('xss')) {
+    links.push({
+      provider: 'OWASP',
+      name: 'OWASP Top 10 - A03:2021 Injection (XSS)',
+      url: 'https://owasp.org/Top10/A03_2021-Injection/'
+    });
+    links.push({
+      provider: 'CWE',
+      name: 'CWE-79: Cross-Site Scripting',
+      url: 'https://cwe.mitre.org/data/definitions/79.html'
+    });
+    links.push({
+      provider: 'PortSwigger',
+      name: 'PortSwigger Academy: XSS',
+      url: 'https://portswigger.net/web-security/cross-site-scripting'
+    });
+  } else if (cat.includes('sql') || id.includes('sqli')) {
+    links.push({
+      provider: 'OWASP',
+      name: 'OWASP SQL Injection Prevention Cheat Sheet',
+      url: 'https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html'
+    });
+    links.push({
+      provider: 'CWE',
+      name: 'CWE-89: SQL Injection',
+      url: 'https://cwe.mitre.org/data/definitions/89.html'
+    });
+    links.push({
+      provider: 'PortSwigger',
+      name: 'PortSwigger Academy: SQL Injection',
+      url: 'https://portswigger.net/web-security/sql-injection'
+    });
+  } else if (cat.includes('llm') || id.includes('llm') || id.includes('ai')) {
+    links.push({
+      provider: 'OWASP',
+      name: 'OWASP Top 10 for LLM Applications',
+      url: 'https://genai.owasp.org/llmrisk/'
+    });
+    links.push({
+      provider: 'NIST',
+      name: 'NIST AI Risk Management Framework',
+      url: 'https://www.nist.gov/itl/ai-risk-management-framework'
+    });
+    links.push({
+      provider: 'PortSwigger',
+      name: 'PortSwigger Academy: LLM Attacks',
+      url: 'https://portswigger.net/web-security/llm-attacks'
+    });
+  } else if (cat.includes('jwt') || id.includes('jwt')) {
+    links.push({
+      provider: 'OWASP',
+      name: 'OWASP JSON Web Token Cheat Sheet',
+      url: 'https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html'
+    });
+    links.push({
+      provider: 'CWE',
+      name: 'CWE-347: Improper Verification of Cryptographic Signature',
+      url: 'https://cwe.mitre.org/data/definitions/347.html'
+    });
+    links.push({
+      provider: 'PortSwigger',
+      name: 'PortSwigger Academy: JWT Vulnerabilities',
+      url: 'https://portswigger.net/web-security/jwt'
+    });
+  } else if (cat.includes('api') || id.includes('hotel') || id.includes('idor') || id.includes('bola')) {
+    links.push({
+      provider: 'OWASP',
+      name: 'OWASP API Security Top 10 (BOLA & Broken Auth)',
+      url: 'https://owasp.org/API-Security/'
+    });
+    links.push({
+      provider: 'CWE',
+      name: 'CWE-639: Authorization Bypass via User Key',
+      url: 'https://cwe.mitre.org/data/definitions/639.html'
+    });
+    links.push({
+      provider: 'PortSwigger',
+      name: 'PortSwigger Academy: Access Control & IDOR',
+      url: 'https://portswigger.net/web-security/access-control'
+    });
+  } else {
+    links.push({
+      provider: 'OWASP',
+      name: 'OWASP Top 10 Web Application Security',
+      url: 'https://owasp.org/Top10/'
+    });
+    links.push({
+      provider: 'CWE',
+      name: 'CWE MITRE Common Weakness Enumeration',
+      url: 'https://cwe.mitre.org/'
+    });
+    links.push({
+      provider: 'PortSwigger',
+      name: 'PortSwigger Web Security Academy',
+      url: 'https://portswigger.net/web-security'
+    });
+  }
+
+  return links;
+}
+
 function buildLabHtml(lab) {
   const canonicalUrl = `${SITE_URL}/labs/${lab.slug}/`;
   const arenaLink = `${SITE_URL}/#/pentest/${lab.id}`;
@@ -1112,6 +1218,19 @@ function buildLabHtml(lab) {
       <a href="/labs/${l.slug}/" style="display: block;">
         <span style="color: #cbd5e1; font-weight: 600;">${l.title}</span>
         <span style="display: block; font-size: 11px; color: #64748b; font-family: var(--font-mono);">${l.category}</span>
+      </a>
+    </li>
+  `).join('');
+
+  const extLinks = getLabExternalLinks(lab);
+  const externalLinksHtml = extLinks.map((ext) => `
+    <li style="margin-bottom: 8px;">
+      <a href="${ext.url}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; color: #cbd5e1; text-decoration: none;">
+        <div>
+          <span style="font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: #f59e0b; display: block;">[${ext.provider}]</span>
+          <span style="font-size: 12px; color: #e2e8f0;">${ext.name}</span>
+        </div>
+        <span style="font-size: 11px; color: #64748b;">↗</span>
       </a>
     </li>
   `).join('');
@@ -1275,6 +1394,16 @@ function buildLabHtml(lab) {
           <h4>İlgili Laboratuvarlar</h4>
           <ul class="sa-widget-list">
             ${relatedLabsHtml}
+          </ul>
+        </div>
+
+        <div class="sa-widget" style="border-color: rgba(245, 158, 11, 0.35); background: rgba(245, 158, 11, 0.04);">
+          <h4 style="color: #f59e0b;">🛡️ Resmi Standartlar &amp; Dış Kaynaklar</h4>
+          <p style="font-size: 11.5px; color: #94a3b8; margin-bottom: 10px; line-height: 1.4;">
+            OWASP ve CWE uluslararası güvenlik standartları dokümanları:
+          </p>
+          <ul class="sa-widget-list">
+            ${externalLinksHtml}
           </ul>
         </div>
 

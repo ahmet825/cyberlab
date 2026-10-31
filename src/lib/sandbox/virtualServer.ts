@@ -94,7 +94,7 @@ router.all('/assistant/packages', handlePackageAssistant);
 // 12. Challenge-12 / LLM-06: CyberGuard AI System Prompt Leak & Jailbreak
 router.all('/chat', (ctx) => {
   // If request comes from bank assistant context
-  if (ctx.headers['host']?.includes('bank') || ctx.path.includes('bank') || ctx.req.body?.includes('query')) {
+  if (ctx.headers['host']?.includes('bank') || ctx.path.includes('bank') || Boolean(ctx.query['query'])) {
     return handleBankaBot(ctx);
   }
   return handleChat(ctx);

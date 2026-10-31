@@ -16,9 +16,11 @@ import {
   Layers,
   Copy,
   Check,
-  Lock
+  Lock,
+  ExternalLink
 } from 'lucide-react';
 import { CURRICULUM_TRACKS } from '../../data/curriculum';
+import { getLabSecurityReferences } from '../../data/labReferences';
 import type { LabItem, HubView } from '../../types/lab';
 import type { UserProfile } from '../../types/user';
 
@@ -330,7 +332,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         width: '100%',
         minHeight: '100vh',
         height: '100vh',
-        overflow: 'hidden',
+        overflowY: 'auto',
+        overflowX: 'hidden',
         backgroundColor: '#05080e',
         color: '#f8fafc',
         fontFamily: 'var(--font-ui)',
@@ -383,11 +386,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         style={{
           position: 'fixed',
           top: '20px',
-          right: '20px',
+          right: '24px',
           zIndex: 100,
           display: 'flex',
           alignItems: 'center',
-          gap: '10px'
+          gap: '12px'
         }}
       >
         <button
@@ -395,61 +398,62 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             _onNavigateView('hotel-breach');
           }}
           style={{
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.15) 100%)',
-            border: '1px solid #f59e0b',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.2) 100%)',
+            border: '1.5px solid #f59e0b',
             color: '#fbbf24',
-            padding: '7px 12px',
-            borderRadius: '6px',
+            padding: '8px 16px',
+            borderRadius: '8px',
             fontFamily: 'var(--font-mono)',
-            fontSize: '11px',
+            fontSize: '13px',
             fontWeight: 800,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            boxShadow: '0 0 15px rgba(245, 158, 11, 0.25)',
+            gap: '8px',
+            boxShadow: '0 0 20px rgba(245, 158, 11, 0.35)',
             transition: 'all 0.2s ease'
           }}
           title="HOTEL SİSTEMİ TEHLİKE ALTINDA: Mavi Takım Güvenli Kod İnceleme & API Zafiyet Simülasyonu (Premium VIP)"
         >
-          <span style={{ fontSize: '13px' }}>👑</span>
-          <span>Mavi Takım: Hotel Lab (Premium)</span>
+          <span style={{ fontSize: '15px' }}>👑</span>
+          <span>Mavi Takım: Hotel Lab</span>
         </button>
         {currentUser ? (
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
-              background: 'rgba(9, 13, 21, 0.9)',
-              border: '1px solid rgba(0, 255, 157, 0.4)',
+              gap: '12px',
+              background: 'rgba(9, 13, 21, 0.95)',
+              border: '1.5px solid rgba(0, 255, 157, 0.5)',
               borderRadius: '8px',
-              padding: '6px 14px',
+              padding: '7px 16px',
               backdropFilter: 'blur(16px)',
-              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 255, 157, 0.2)'
+              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 255, 157, 0.25)'
             }}
           >
-            <Shield size={16} color="var(--accent-green)" />
+            <Shield size={18} color="var(--accent-green)" />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
                 @{currentUser.username || currentUser.email?.split('@')[0]}
               </span>
-              <span style={{ fontSize: '9px', color: 'var(--accent-green)', fontFamily: 'var(--font-mono)' }}>
+              <span style={{ fontSize: '11px', color: 'var(--accent-green)', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
                 {currentUser.role || 'Operatör'} // AKTİF
               </span>
             </div>
             <button
               onClick={onLogout}
               style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                color: '#cbd5e1',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: '10.5px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: '#e2e8f0',
+                padding: '4px 10px',
+                borderRadius: '5px',
+                fontSize: '12px',
                 fontFamily: 'var(--font-mono)',
+                fontWeight: 600,
                 cursor: 'pointer',
-                marginLeft: '6px'
+                marginLeft: '8px'
               }}
               title="Oturumu Kapat"
             >
@@ -463,22 +467,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              background: 'rgba(9, 13, 21, 0.9)',
-              border: `1px solid ${currentFrame.themeColor}`,
+              background: 'rgba(9, 13, 21, 0.95)',
+              border: `1.5px solid ${currentFrame.themeColor}`,
               color: '#ffffff',
-              padding: '8px 16px',
+              padding: '9px 18px',
               borderRadius: '8px',
               fontFamily: 'var(--font-mono)',
-              fontSize: '11.5px',
+              fontSize: '13px',
               fontWeight: 800,
               cursor: 'pointer',
               backdropFilter: 'blur(16px)',
-              boxShadow: `0 8px 30px rgba(0, 0, 0, 0.7), 0 0 15px ${currentFrame.themeColor}33`,
+              boxShadow: `0 8px 30px rgba(0, 0, 0, 0.7), 0 0 20px ${currentFrame.themeColor}44`,
               transition: 'all 0.2s ease',
               letterSpacing: '0.5px'
             }}
           >
-            <Key size={14} color={currentFrame.themeColor} />
+            <Key size={16} color={currentFrame.themeColor} />
             <span>GİRİŞ YAP // OPERATÖR</span>
           </button>
         )}
@@ -666,50 +670,52 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: isLocked ? '#64748b' : '#ef4444', fontWeight: 800 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: isLocked ? '#94a3b8' : '#ef4444', fontWeight: 800 }}>
                         🔴 #{String(idx + 1).padStart(2, '0')}
                       </span>
                       <span style={{
-                        fontSize: '9px',
-                        padding: '1px 5px',
-                        borderRadius: '3px',
-                        background: isLocked ? 'rgba(255, 255, 255, 0.05)' : 'rgba(239, 68, 68, 0.12)',
+                        fontSize: '11px',
+                        padding: '2px 7px',
+                        borderRadius: '4px',
+                        background: isLocked ? 'rgba(255, 255, 255, 0.06)' : 'rgba(239, 68, 68, 0.18)',
                         color: isLocked ? '#94a3b8' : '#f87171',
-                        fontFamily: 'var(--font-mono)'
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 700
                       }}>
                         {lab.category}
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {isLocked ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#f59e0b', fontSize: '9px', fontFamily: 'var(--font-mono)' }}>
-                          <Lock size={10} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#f59e0b', fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 800 }}>
+                          <Lock size={12} />
                           <span>GİRİŞ GEREKLİ</span>
                         </div>
                       ) : (
                         <>
                           <span style={{
-                            fontSize: '9px',
+                            fontSize: '11px',
                             fontFamily: 'var(--font-mono)',
+                            fontWeight: 700,
                             color: lab.difficulty === 'Apprentice' ? '#86efac' : '#fbbf24'
                           }}>
                             {difficultyTurkish}
                           </span>
-                          {isSolved && <CheckCircle2 size={12} color="#00ff9d" />}
+                          {isSolved && <CheckCircle2 size={14} color="#00ff9d" />}
                         </>
                       )}
                     </div>
                   </div>
 
-                  <span style={{ fontSize: '11.5px', fontWeight: 600, color: isLocked ? '#94a3b8' : '#f8fafc', lineHeight: '1.3' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: isLocked ? '#cbd5e1' : '#ffffff', lineHeight: '1.4' }}>
                     {lab.title}
                   </span>
 
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', fontSize: '9.5px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px', fontSize: '11px', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
                     <span>{isLocked ? 'Erişmek için Giriş Yapın' : `${lab.stages.length} Aşama Müfredat`}</span>
-                    <span style={{ color: isLocked ? '#94a3b8' : '#ef4444' }}>İncele ↓</span>
+                    <span style={{ color: isLocked ? '#94a3b8' : '#ef4444', fontWeight: 800 }}>İncele ↓</span>
                   </div>
                 </a>
               );
@@ -846,10 +852,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           position: 'relative',
           zIndex: 10,
           width: '100%',
-          height: '100%',
+          minHeight: 'calc(100vh - 40px)',
           display: 'grid',
-          gridTemplateColumns: 'minmax(280px, 440px) 1fr',
-          paddingLeft: isLeftDrawerOpen ? '360px' : '64px',
+          gridTemplateColumns: 'minmax(320px, 460px) minmax(0, 1fr)',
+          paddingLeft: isLeftDrawerOpen ? '370px' : '64px',
           paddingRight: '30px',
           paddingTop: '20px',
           paddingBottom: '20px',
@@ -898,37 +904,38 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '3px 8px',
-              borderRadius: '4px',
+              gap: '8px',
+              padding: '5px 12px',
+              borderRadius: '6px',
               background: `${currentFrame.themeColor}22`,
-              border: `1px solid ${currentFrame.themeColor}55`,
+              border: `1.5px solid ${currentFrame.themeColor}66`,
               fontFamily: 'var(--font-mono)',
-              fontSize: '10px',
+              fontSize: '12px',
               fontWeight: 800,
               color: currentFrame.themeColor,
-              marginBottom: '10px',
-              width: 'fit-content'
+              marginBottom: '12px',
+              width: 'fit-content',
+              letterSpacing: '0.5px'
             }}
           >
-            {currentFrame.moodEmotion === 'panic' && <AlertOctagon size={12} />}
-            {currentFrame.moodEmotion === 'wonder' && <Binary size={12} />}
-            {currentFrame.moodEmotion === 'overconfidence' && <Flame size={12} />}
-            {currentFrame.moodEmotion === 'mastery' && <Cpu size={12} />}
-            {currentFrame.moodEmotion === 'arena' && <Shield size={12} />}
+            {currentFrame.moodEmotion === 'panic' && <AlertOctagon size={15} />}
+            {currentFrame.moodEmotion === 'wonder' && <Binary size={15} />}
+            {currentFrame.moodEmotion === 'overconfidence' && <Flame size={15} />}
+            {currentFrame.moodEmotion === 'mastery' && <Cpu size={15} />}
+            {currentFrame.moodEmotion === 'arena' && <Shield size={15} />}
             <span>{currentFrame.badge}</span>
           </div>
 
           {/* Main Chapter Title */}
           <h2
             style={{
-              fontSize: 'clamp(20px, 2.2vw, 28px)',
+              fontSize: 'clamp(24px, 2.6vw, 34px)',
               fontWeight: 800,
-              lineHeight: 1.2,
+              lineHeight: 1.25,
               fontFamily: 'var(--font-display)',
               letterSpacing: '-0.3px',
               color: '#ffffff',
-              marginBottom: '8px'
+              marginBottom: '10px'
             }}
           >
             {currentFrame.title}
@@ -937,12 +944,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* Tagline */}
           <p
             style={{
-              fontSize: '13px',
+              fontSize: '15px',
               fontWeight: 600,
               fontStyle: 'italic',
               color: currentFrame.themeColor,
-              marginBottom: '14px',
-              lineHeight: 1.45
+              marginBottom: '16px',
+              lineHeight: 1.5
             }}
           >
             "{currentFrame.tagline}"
@@ -951,12 +958,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* Concise Punchy Summary */}
           <div
             style={{
-              fontSize: '13px',
-              lineHeight: 1.6,
-              color: '#cbd5e1',
-              marginBottom: '16px',
-              borderLeft: `2px solid ${currentFrame.themeColor}`,
-              paddingLeft: '12px'
+              fontSize: '15px',
+              lineHeight: 1.7,
+              color: '#e2e8f0',
+              marginBottom: '18px',
+              borderLeft: `3px solid ${currentFrame.themeColor}`,
+              paddingLeft: '14px',
+              background: 'rgba(255, 255, 255, 0.02)',
+              borderRadius: '0 6px 6px 0',
+              paddingTop: '6px',
+              paddingBottom: '6px'
             }}
           >
             {currentFrame.summary}
@@ -966,45 +977,46 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <button
             onClick={() => setShowFullMemoir(!showFullMemoir)}
             style={{
-              background: 'transparent',
-              border: `1px solid rgba(255, 255, 255, 0.12)`,
-              color: '#e2e8f0',
-              padding: '6px 12px',
-              borderRadius: '5px',
-              fontSize: '11px',
+              background: 'rgba(255, 255, 255, 0.04)',
+              border: `1px solid rgba(255, 255, 255, 0.16)`,
+              color: '#f8fafc',
+              padding: '8px 14px',
+              borderRadius: '6px',
+              fontSize: '13px',
               fontFamily: 'var(--font-mono)',
+              fontWeight: 600,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: '16px',
+              marginBottom: '18px',
               transition: 'all 0.2s ease'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <BookOpen size={12} color={currentFrame.themeColor} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BookOpen size={15} color={currentFrame.themeColor} />
               <span>{showFullMemoir ? 'Özeti Göster' : 'Detaylı Anıyı Oku'}</span>
             </div>
-            <span style={{ color: currentFrame.themeColor }}>{showFullMemoir ? '▲' : '▼'}</span>
+            <span style={{ color: currentFrame.themeColor, fontWeight: 800 }}>{showFullMemoir ? '▲' : '▼'}</span>
           </button>
 
           {/* Full Memoir Accordion */}
           {showFullMemoir && (
             <div
               style={{
-                marginBottom: '16px',
-                padding: '12px',
-                background: 'rgba(0, 0, 0, 0.4)',
-                borderRadius: '6px',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                maxHeight: '180px',
+                marginBottom: '18px',
+                padding: '14px 16px',
+                background: 'rgba(0, 0, 0, 0.55)',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                maxHeight: '220px',
                 overflowY: 'auto',
-                fontSize: '12px',
-                lineHeight: 1.6,
+                fontSize: '14px',
+                lineHeight: 1.7,
                 color: '#e2e8f0',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '8px'
+                gap: '10px'
               }}
             >
               {currentFrame.detailedMemoir.map((para, i) => (
@@ -1019,28 +1031,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: '10px',
-              paddingTop: '12px',
-              borderTop: '1px solid rgba(255, 255, 255, 0.08)'
+              gap: '12px',
+              paddingTop: '14px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)'
             }}
           >
             <button
               onClick={handlePrevFrame}
               style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#cbd5e1',
-                padding: '7px 12px',
-                borderRadius: '5px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                color: '#ffffff',
+                padding: '8px 16px',
+                borderRadius: '6px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                fontSize: '11px',
-                fontFamily: 'var(--font-mono)'
+                gap: '8px',
+                fontSize: '13px',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 700
               }}
             >
-              <RotateCcw size={12} />
+              <RotateCcw size={14} />
               <span>ÖNCEKİ</span>
             </button>
 
@@ -1050,20 +1063,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '8px',
                 cursor: 'pointer',
-                background: `${currentFrame.themeColor}15`,
-                padding: '5px 12px',
-                borderRadius: '20px',
-                border: `1px solid ${currentFrame.themeColor}44`
+                background: `${currentFrame.themeColor}22`,
+                padding: '7px 16px',
+                borderRadius: '24px',
+                border: `1.5px solid ${currentFrame.themeColor}66`,
+                boxShadow: `0 0 16px ${currentFrame.themeColor}33`
               }}
               title="Çarkı çevirmek için tıklayın"
             >
-              <RotateCw size={13} color={currentFrame.themeColor} style={{ animation: 'spinPulse 6s linear infinite' }} />
+              <RotateCw size={15} color={currentFrame.themeColor} style={{ animation: 'spinPulse 6s linear infinite' }} />
               <span
                 style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '11px',
+                  fontSize: '13px',
                   fontWeight: 800,
                   color: currentFrame.themeColor
                 }}
@@ -1075,22 +1089,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <button
               onClick={handleNextFrame}
               style={{
-                background: `${currentFrame.themeColor}22`,
-                border: `1px solid ${currentFrame.themeColor}55`,
+                background: `${currentFrame.themeColor}25`,
+                border: `1.5px solid ${currentFrame.themeColor}66`,
                 color: currentFrame.themeColor,
-                padding: '7px 12px',
-                borderRadius: '5px',
+                padding: '8px 16px',
+                borderRadius: '6px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                fontSize: '11px',
+                gap: '8px',
+                fontSize: '13px',
                 fontFamily: 'var(--font-mono)',
-                fontWeight: 800
+                fontWeight: 800,
+                boxShadow: `0 0 15px ${currentFrame.themeColor}25`
               }}
             >
               <span>SONRAKİ</span>
-              <RotateCw size={12} />
+              <RotateCw size={14} />
             </button>
           </div>
         </div>
@@ -1636,123 +1651,88 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 )}
               </div>
 
-              {/* Sütun 2: Müfredat Aşamaları */}
-              <div
-                style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
-                  borderRadius: '8px',
-                  padding: '12px 14px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                  overflowY: 'auto'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '10.5px', color: '#64748b', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
-                    // MÜFREDAT VE GÖREV ADIMLARI
-                  </span>
-                  <span style={{ fontSize: '10px', color: selectedCurriculumLab.type === 'pentest' ? '#ef4444' : '#60a5fa', fontFamily: 'var(--font-mono)' }}>
-                    {selectedCurriculumLab.type === 'pentest'
-                      ? `${selectedCurriculumLab.lab.stages.length} Aşamalı İlerleme`
-                      : '4 Aşamalı Savunma Eğitimi'}
-                  </span>
-                </div>
+              {/* Sütun 2: Statik Dış Güvenlik Referansları (OWASP, CWE, PortSwigger) - Müfredat Listesi Kaldırıldı */}
+              {(() => {
+                const targetLabId = selectedCurriculumLab.type === 'pentest'
+                  ? selectedCurriculumLab.lab.id
+                  : selectedCurriculumLab.scenario === 'file-upload'
+                  ? 'file-upload-defense'
+                  : 'hotel-full-simulation';
+                const secRefs = getLabSecurityReferences(targetLabId);
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {selectedCurriculumLab.type === 'pentest' ? (
-                    selectedCurriculumLab.lab.stages.map((st, i) => (
-                      <div
-                        key={st.id}
-                        style={{
-                          background: 'rgba(0, 0, 0, 0.35)',
-                          border: '1px solid rgba(255, 255, 255, 0.07)',
-                          borderRadius: '6px',
-                          padding: '8px 10px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '3px'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span
-                            style={{
-                              fontSize: '9.5px',
-                              fontFamily: 'var(--font-mono)',
-                              fontWeight: 800,
-                              color: '#ef4444',
-                              background: 'rgba(239, 68, 68, 0.1)',
-                              padding: '1px 5px',
-                              borderRadius: '3px'
-                            }}
-                          >
-                            AŞAMA {i + 1}
-                          </span>
-                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#f1f5f9' }}>
-                            {st.title}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
-                          {st.objective}
-                        </div>
-                        {st.guidance && (
-                          <div style={{ fontSize: '10px', color: '#64748b', fontStyle: 'italic', marginTop: '2px' }}>
-                            Rehber: {st.guidance}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  ) : (
+                return (
+                  <div
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      borderRadius: '8px',
+                      padding: '14px 16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px',
+                      overflowY: 'auto'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '11px', color: '#f59e0b', fontFamily: 'var(--font-mono)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <BookOpen size={14} />
+                        // RESMİ GÜVENLİK STANDARTLARI &amp; REFERANSLAR
+                      </span>
+                      <span style={{ fontSize: '10px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
+                        OWASP &bull; CWE
+                      </span>
+                    </div>
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {(selectedCurriculumLab.scenario === 'file-upload' ? [
-                        { title: 'Adım 1: Auth (Kimlik Doğrulama) Kontrolü', desc: 'Anonim dosya yükleme açığını analiz edin; JWT Bearer doğrulaması ile yetkisiz istekleri engelleyin.' },
-                        { title: 'Adım 2: Filetype Validation (MIME & Magic Bytes)', desc: 'Sahte Content-Type ile gelen PHP web shell saldırılarını Magic Bytes ve uzantı Allowlist ile durdurun.' },
-                        { title: 'Adım 3: Filesize Validation (DoS & Depolama Koruma)', desc: '500 MB boyutundaki çöp dosya yüklemelerini Multer 2MB sınırı ile keserek sunucuyu koruyun.' },
-                        { title: 'Adım 4: JWT İmzalama & Güvenli Depolama', desc: 'Dosyaları rastgele UUID ile web kökü dışına kaydedip 15 dk geçerli JWT imzalı indirme linki üretin.' }
-                      ] : [
-                        { title: 'Aşama 1: Express Kaynak Kod Okuma', desc: 'Müşteri, rezervasyon ve müdür rotalarını inceleyerek zafiyetli kod satırlarını tespit edin.' },
-                        { title: 'Aşama 2: API İstek Konsolu', desc: 'Canlı Express sunucusuna parametrelerle istek atıp sızıntıları uygulamalı teyit edin.' },
-                        { title: 'Aşama 3: Öğretmen Teori Tahtası', desc: 'Görsel mimari şemaları ve zafiyet giderme (fix) yöntemlerini tahta üzerinde öğrenin.' },
-                        { title: 'Aşama 4: 10 Soruluk Değerlendirme Testi', desc: 'Çoktan seçmeli savunma testini tamamlayarak Başarılı / Başarısız karnenizi alın.' }
-                      ]).map((step, idx) => (
-                        <div
+                      {secRefs.externalLinks.map((ext, idx) => (
+                        <a
                           key={idx}
+                          href={ext.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           style={{
                             background: 'rgba(0, 0, 0, 0.35)',
-                            border: `1px solid ${selectedCurriculumLab.scenario === 'file-upload' ? 'rgba(0, 255, 157, 0.2)' : 'rgba(59, 130, 246, 0.2)'}`,
+                            border: '1px solid rgba(255, 255, 255, 0.07)',
                             borderRadius: '6px',
-                            padding: '8px 10px',
+                            padding: '10px 12px',
                             display: 'flex',
-                            flexDirection: 'column',
-                            gap: '3px'
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            gap: '10px',
+                            textDecoration: 'none',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+                            e.currentTarget.style.background = 'rgba(245, 158, 11, 0.05)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.07)';
+                            e.currentTarget.style.background = 'rgba(0, 0, 0, 0.35)';
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <div>
                             <span style={{
-                              fontSize: '9.5px',
+                              fontSize: '11px',
                               fontFamily: 'var(--font-mono)',
                               fontWeight: 800,
-                              color: selectedCurriculumLab.scenario === 'file-upload' ? '#00ff9d' : '#60a5fa',
-                              background: selectedCurriculumLab.scenario === 'file-upload' ? 'rgba(0, 255, 157, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-                              padding: '1px 5px',
-                              borderRadius: '3px'
+                              color: '#f59e0b',
+                              display: 'block',
+                              marginBottom: '3px'
                             }}>
-                              ADIM {idx + 1}
+                              [{ext.provider}] {ext.label}
                             </span>
-                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#f8fafc' }}>
-                              {step.title}
+                            <span style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.45', display: 'block' }}>
+                              {ext.description}
                             </span>
                           </div>
-                          <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
-                            {step.desc}
-                          </div>
-                        </div>
+                          <ExternalLink size={14} style={{ color: '#64748b', flexShrink: 0, marginTop: '2px' }} />
+                        </a>
                       ))}
                     </div>
-                  )}
-                </div>
-              </div>
+                  </div>
+                );
+              })()}
 
               {/* Sütun 3: Aksiyon & Başlatma */}
               <div
